@@ -12,6 +12,8 @@ interface SelectProps {
   className?: string;
   defaultValue?: string;
   disabled?: boolean;
+  // Optional controlled value. If provided, the component will be controlled
+  value?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -21,9 +23,24 @@ const Select: React.FC<SelectProps> = ({
   className = "",
   defaultValue = "",
   disabled = false,
+  value,
 }) => {
   // Manage the selected value
-  const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+  const [selectedValue, setSelectedValue] = useState<string>(value !== undefined ? value : defaultValue);
+
+  // Keep internal state in sync when parent updates controlled value
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setSelectedValue(value);
+    }
+  }, [value]);
+
+  // Keep internal state in sync if defaultValue changes (e.g., after async load)
+  React.useEffect(() => {
+    if (value === undefined) {
+      setSelectedValue(defaultValue);
+    }
+  }, [defaultValue, value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;

@@ -8,7 +8,7 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  role: "admin" | "staff" | "customer" | "public_service_manager";
+  role: "admin" | "staff" | "customer" | "public_service_manager" | "driver";
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
@@ -228,6 +228,28 @@ class UserService {
       // Return 0 if we can't get the count, but don't break the page
       return 0;
     }
+  }
+
+  // Register new driver (Admin only)
+  async registerDriver(driverData: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+  }): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...driverData,
+        role: 'driver' // Set role to driver for new registrations
+      }),
+    });
+
+    return this.handleResponse<User>(response);
   }
 
   // Get current user profile

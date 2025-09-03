@@ -12,13 +12,24 @@ export default function CreateDriverPage() {
   const handleSubmit = async (driverData: CreateDriverRequest | UpdateDriverRequest) => {
     setIsLoading(true);
     try {
+      console.log('Creating driver with data:', driverData);
+      
       // Since this is create mode, we know driverData is CreateDriverRequest
-      await driverService.createDriver(driverData as CreateDriverRequest);
+      const newDriver = await driverService.createDriver(driverData as CreateDriverRequest);
+      
+      console.log('Driver created successfully:', newDriver);
       alert("Driver created successfully!");
       router.push('/fleet-drivers');
     } catch (error) {
       console.error("Failed to create driver:", error);
-      alert("Failed to create driver. Please try again.");
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to create driver. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

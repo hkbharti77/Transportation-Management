@@ -24,6 +24,7 @@ import {
   PencilIcon,
   TrashBinIcon
 } from '@/icons';
+import AddDriverModal from '@/components/drivers/AddDriverModal';
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<User[]>([]);
@@ -39,6 +40,9 @@ export default function DriversPage() {
   const [toggleLoading, setToggleLoading] = useState<number | null>(null);
   const [toggleError, setToggleError] = useState<string | null>(null);
   const [toggleSuccess, setToggleSuccess] = useState<string | null>(null);
+  
+  // Add driver modal states
+  const [addDriverModalOpen, setAddDriverModalOpen] = useState(false);
   
   // Role change functionality states
   const [roleModalOpen, setRoleModalOpen] = useState(false);
@@ -197,6 +201,23 @@ export default function DriversPage() {
     setRoleChangeSuccess(null);
   };
 
+  const handleAddDriver = () => {
+    setAddDriverModalOpen(true);
+  };
+
+  const handleDriverAdded = (newDriver: User) => {
+    // Add the new driver to the current list
+    setDrivers(prev => [newDriver, ...prev]);
+    // Update total count
+    setTotalDrivers(prev => prev + 1);
+    // Refresh the drivers list to ensure proper ordering
+    loadDrivers();
+  };
+
+  const handleCloseAddDriverModal = () => {
+    setAddDriverModalOpen(false);
+  };
+
   const totalPages = Math.ceil(totalDrivers / limit);
 
   const formatDate = (dateString: string) => {
@@ -238,7 +259,7 @@ export default function DriversPage() {
             Manage and monitor all registered drivers in the system
           </p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button className="flex items-center gap-2" onClick={handleAddDriver}>
           <PlusIcon className="h-4 w-4" />
           Add New Driver
         </Button>
@@ -436,6 +457,13 @@ export default function DriversPage() {
           </>
         )}
       </ComponentCard>
+
+      {/* Add Driver Modal */}
+      <AddDriverModal
+        isOpen={addDriverModalOpen}
+        onClose={handleCloseAddDriverModal}
+        onDriverAdded={handleDriverAdded}
+      />
     </div>
   );
 }

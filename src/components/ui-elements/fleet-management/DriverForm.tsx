@@ -49,10 +49,25 @@ export default function DriverForm({
     const fetchData = async () => {
       setIsLoadingData(true);
       try {
-        // Fetch users (potential drivers)
-        const allUsersResponse = await userService.getUsers({ limit: 1000 });
-        const driverUsers = allUsersResponse.data.filter(user => user.role === 'staff' || user.role === 'customer');
-        setUsers(driverUsers);
+                 // Fetch users (potential drivers)
+         const allUsersResponse = await userService.getUsers({ limit: 1000 });
+         console.log('All users fetched:', allUsersResponse);
+         
+         // Filter users who can be drivers (staff, customer, or driver role)
+         const driverUsers = allUsersResponse.data.filter(user => 
+           user.role === 'staff' || 
+           user.role === 'customer' || 
+           user.role === 'driver'
+         );
+         console.log('Filtered driver users:', driverUsers);
+         
+         // If no users found, show helpful message
+         if (driverUsers.length === 0) {
+           console.warn('No users found for driver assignment. Please create users first.');
+           alert('No users found for driver assignment. Please create users with staff, customer, or driver roles first.');
+         }
+         
+         setUsers(driverUsers);
 
         // Fetch available trucks
         const availableTrucks = await fleetService.getTrucks();
@@ -97,10 +112,16 @@ export default function DriverForm({
   }, [driver, mode]);
 
   const handleInputChange = (field: string, value: string | number | null) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    console.log(`Updating field ${field} with value:`, value);
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      console.log('Updated form data:', newData);
+      return newData;
+    });
     
     // Clear error when user starts typing
     if (errors[field]) {
@@ -127,52 +148,90 @@ export default function DriverForm({
   };
 
   const validateForm = (): boolean => {
+    console.log('Validating form with data:', formData);
     const newErrors: Record<string, string> = {};
 
     if (!formData.user_id || formData.user_id === 0) {
       newErrors.user_id = "Please select a user";
+      console.log('User ID validation failed:', formData.user_id);
     }
 
     if (!formData.employee_id.trim()) {
       newErrors.employee_id = "Employee ID is required";
+      console.log('Employee ID validation failed:', formData.employee_id);
     }
 
     if (!formData.license_number.trim()) {
       newErrors.license_number = "License number is required";
+      console.log('License number validation failed:', formData.license_number);
     }
 
     if (!formData.license_type) {
       newErrors.license_type = "License type is required";
+      console.log('License type validation failed:', formData.license_type);
     }
 
     if (!formData.license_expiry) {
       newErrors.license_expiry = "License expiry date is required";
+      console.log('License expiry validation failed:', formData.license_expiry);
+    }
+
+    // Validate that license expiry is not in the past
+    if (formData.license_expiry) {
+      const expiryDate = new Date(formData.license_expiry);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (expiryDate < today) {
+        newErrors.license_expiry = "License expiry date cannot be in the past";
+        console.log('License expiry date is in the past:', expiryDate, 'vs today:', today);
+      }
     }
 
     if (formData.experience_years < 0) {
       newErrors.experience_years = "Experience years cannot be negative";
+      console.log('Experience years validation failed:', formData.experience_years);
     }
 
     if (!formData.phone_emergency.trim()) {
       newErrors.phone_emergency = "Emergency phone number is required";
+      console.log('Phone emergency validation failed:', formData.phone_emergency);
+    }
+
+    // Basic phone number validation
+    if (formData.phone_emergency.trim() && !/^[\+]?[0-9\s\-\(\)]+$/.test(formData.phone_emergency.trim())) {
+      newErrors.phone_emergency = "Please enter a valid phone number";
+      console.log('Phone number format validation failed:', formData.phone_emergency);
     }
 
     if (!formData.address.trim()) {
       newErrors.address = "Address is required";
+      console.log('Address validation failed:', formData.address);
     }
 
     if (!formData.blood_group) {
       newErrors.blood_group = "Blood group is required";
+      console.log('Blood group validation failed:', formData.blood_group);
     }
 
     if (!formData.shift_start) {
       newErrors.shift_start = "Shift start time is required";
+      console.log('Shift start validation failed:', formData.shift_start);
     }
 
     if (!formData.shift_end) {
       newErrors.shift_end = "Shift end time is required";
+      console.log('Shift end validation failed:', formData.shift_end);
     }
 
+    // Validate that shift end is after shift start
+    if (formData.shift_start && formData.shift_end) {
+      if (formData.shift_start >= formData.shift_end) {
+        newErrors.shift_end = "Shift end time must be after shift start time";
+        console.log('Shift time validation failed:', formData.shift_start, '>=', formData.shift_end);
+      }
+    }
+
+    console.log('Validation errors:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -180,20 +239,30 @@ export default function DriverForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Form submitted with data:', formData);
+    
     if (validateForm()) {
-      // Convert date to ISO format for API
+      // Convert date to ISO format for API with proper timezone handling
       const formattedData = {
         ...formData,
-        license_expiry: formData.license_expiry ? new Date(formData.license_expiry + 'T00:00:00Z').toISOString() : formData.license_expiry
+        license_expiry: formData.license_expiry ? 
+          new Date(formData.license_expiry + 'T00:00:00.000Z').toISOString() : 
+          formData.license_expiry
       };
+      
+      console.log('Formatted driver data for API:', formattedData);
       onSubmit(formattedData);
+    } else {
+      console.log('Form validation failed with errors:', errors);
     }
   };
 
-  const userOptions = users.map(user => ({
-    value: user.id?.toString() || "0",
-    label: `${user.name} (${user.email})`
-  }));
+  const userOptions = users
+    .filter(user => typeof user.id === 'number' && user.id > 0)
+    .map(user => ({
+      value: user.id!.toString(),
+      label: `${user.name} (${user.email}) - ${user.role}`
+    }));
 
   const truckOptions = trucks.map(truck => ({
     value: truck.id?.toString() || "0",
@@ -249,8 +318,12 @@ export default function DriverForm({
             <Select
               options={userOptions}
               placeholder={isLoadingData ? "Loading users..." : "Select a user"}
-              onChange={(value) => handleInputChange("user_id", parseInt(value) || 0)}
-              defaultValue={formData.user_id?.toString() || "0"}
+              onChange={(value) => {
+                const parsed = parseInt(value, 10);
+                handleInputChange("user_id", Number.isFinite(parsed) ? parsed : 0);
+              }}
+              value={formData.user_id ? formData.user_id.toString() : ""}
+              defaultValue={formData.user_id ? formData.user_id.toString() : ""}
               disabled={isLoadingData || mode === "edit"}
             />
             {errors.user_id && (

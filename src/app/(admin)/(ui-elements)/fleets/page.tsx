@@ -16,6 +16,9 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import Pagination from "@/components/tables/Pagination";
+import DriverAssignmentModal from "@/components/ui-elements/fleet-management/DriverAssignmentModal";
+import TruckLocationModal from "@/components/ui-elements/fleet-management/TruckLocationModal";
+import TruckLocationHistoryModal from "@/components/ui-elements/fleet-management/TruckLocationHistoryModal";
 
 export default function FleetsPage() {
   const router = useRouter();
@@ -30,6 +33,18 @@ export default function FleetsPage() {
     name: "",
     description: ""
   });
+  
+  // Driver assignment modal state
+  const [driverAssignmentModalOpen, setDriverAssignmentModalOpen] = useState(false);
+  const [selectedTruckForAssignment, setSelectedTruckForAssignment] = useState<any>(null);
+  
+  // Truck location modal state
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
+  const [selectedTruckForLocation, setSelectedTruckForLocation] = useState<any>(null);
+  
+  // Truck location history modal state
+  const [locationHistoryModalOpen, setLocationHistoryModalOpen] = useState(false);
+  const [selectedTruckForHistory, setSelectedTruckForHistory] = useState<any>(null);
   
   // Pagination and filtering state
   const [currentPage, setCurrentPage] = useState(1);
@@ -201,6 +216,50 @@ export default function FleetsPage() {
 
   const closeFleetDetails = () => {
     setViewingFleet(null);
+  };
+
+  const handleAssignDriver = (truck: any) => {
+    setSelectedTruckForAssignment(truck);
+    setDriverAssignmentModalOpen(true);
+  };
+
+  const handleDriverAssignmentComplete = () => {
+    // Refresh the fleet details to show updated truck assignments
+    if (viewingFleet) {
+      viewFleetDetails(viewingFleet);
+    }
+  };
+
+  const closeDriverAssignmentModal = () => {
+    setDriverAssignmentModalOpen(false);
+    setSelectedTruckForAssignment(null);
+  };
+
+  const handleUpdateLocation = (truck: any) => {
+    setSelectedTruckForLocation(truck);
+    setLocationModalOpen(true);
+  };
+
+  const handleLocationUpdated = () => {
+    // Refresh the fleet details to show updated location
+    if (viewingFleet) {
+      viewFleetDetails(viewingFleet);
+    }
+  };
+
+  const closeLocationModal = () => {
+    setLocationModalOpen(false);
+    setSelectedTruckForLocation(null);
+  };
+
+  const handleViewLocationHistory = (truck: any) => {
+    setSelectedTruckForHistory(truck);
+    setLocationHistoryModalOpen(true);
+  };
+
+  const closeLocationHistoryModal = () => {
+    setLocationHistoryModalOpen(false);
+    setSelectedTruckForHistory(null);
   };
 
   const debugAuth = () => {
@@ -772,6 +831,24 @@ export default function FleetsPage() {
                              >
                                Status
                              </TableCell>
+                             <TableCell
+                               isHeader
+                               className="px-4 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                             >
+                               Driver
+                             </TableCell>
+                             <TableCell
+                               isHeader
+                               className="px-4 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                             >
+                               Location
+                             </TableCell>
+                             <TableCell
+                               isHeader
+                               className="px-4 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                             >
+                               Actions
+                             </TableCell>
                            </TableRow>
                          </TableHeader>
                          <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
@@ -800,6 +877,43 @@ export default function FleetsPage() {
                                    {truck.status?.replace('_', ' ').toUpperCase() || 'Unknown'}
                                  </Badge>
                                </TableCell>
+                               <TableCell className="px-4 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                 {truck.assigned_driver_id ? `Driver ${truck.assigned_driver_id}` : 'Not Assigned'}
+                               </TableCell>
+                               <TableCell className="px-4 py-2 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                 {truck.current_location_lat && truck.current_location_lng ? 
+                                   `${truck.current_location_lat.toFixed(4)}, ${truck.current_location_lng.toFixed(4)}` : 
+                                   'No Location'
+                                 }
+                               </TableCell>
+                               <TableCell className="px-4 py-2 text-start">
+                                 <div className="flex gap-2">
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     onClick={() => handleAssignDriver(truck)}
+                                     className="text-blue-600 hover:text-blue-700"
+                                   >
+                                     {truck.assigned_driver_id ? 'Reassign' : 'Assign'} Driver
+                                   </Button>
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     onClick={() => handleUpdateLocation(truck)}
+                                     className="text-green-600 hover:text-green-700"
+                                   >
+                                     Update Location
+                                   </Button>
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     onClick={() => handleViewLocationHistory(truck)}
+                                     className="text-purple-600 hover:text-purple-700"
+                                   >
+                                     View History
+                                   </Button>
+                                 </div>
+                               </TableCell>
                              </TableRow>
                            ))}
                          </TableBody>
@@ -816,6 +930,29 @@ export default function FleetsPage() {
            </div>
          </Modal>
        )}
+
+       {/* Driver Assignment Modal */}
+       <DriverAssignmentModal
+         isOpen={driverAssignmentModalOpen}
+         onClose={closeDriverAssignmentModal}
+         truck={selectedTruckForAssignment}
+         onAssignmentComplete={handleDriverAssignmentComplete}
+       />
+
+       {/* Truck Location Modal */}
+       <TruckLocationModal
+         isOpen={locationModalOpen}
+         onClose={closeLocationModal}
+         truck={selectedTruckForLocation}
+         onLocationUpdated={handleLocationUpdated}
+       />
+
+       {/* Truck Location History Modal */}
+       <TruckLocationHistoryModal
+         isOpen={locationHistoryModalOpen}
+         onClose={closeLocationHistoryModal}
+         truck={selectedTruckForHistory}
+       />
     </div>
   );
 }

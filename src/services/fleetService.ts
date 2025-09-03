@@ -110,6 +110,31 @@ export interface FleetFilterOptions {
   is_active?: boolean;
 }
 
+// Fleet summary interface
+export interface FleetSummary {
+  total_trucks: number;
+  available_trucks: number;
+  busy_trucks: number;
+  maintenance_trucks: number;
+  total_drivers: number;
+  available_drivers: number;
+  on_trip_drivers: number;
+}
+
+// Truck location record returned by the API
+export interface TruckLocationRecord {
+  truck_id: number;
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+  speed_kmh?: number;
+  heading_degrees?: number;
+  accuracy_meters?: number;
+  source?: string;
+  id: number;
+  timestamp: string;
+}
+
 class FleetService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('access_token');
@@ -237,15 +262,18 @@ class FleetService {
     return this.handleResponse<ApiResponse<null>>(response);
   }
 
-  // Assign driver to truck
-  async assignDriverToTruck(truckId: number, driverId: number): Promise<Truck> {
-    const response = await fetch(`${API_BASE_URL}/fleet/trucks/${truckId}/assign-driver`, {
-      method: 'PUT',
+  // Assign driver to truck (Admin only) - using fleet/assign endpoint
+  async assignDriverToTruck(driverId: number, truckId: number): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/fleet/assign`, {
+      method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify({ driver_id: driverId }),
+      body: JSON.stringify({
+        driver_id: driverId,
+        truck_id: truckId
+      }),
     });
 
-    return this.handleResponse<Truck>(response);
+    return this.handleResponse<{ message: string }>(response);
   }
 
   // Unassign driver from truck
@@ -269,18 +297,77 @@ class FleetService {
     return this.handleResponse<Truck>(response);
   }
 
-  // Update truck location
-  async updateTruckLocation(truckId: number, lat: number, lng: number): Promise<Truck> {
+  // Update truck location with comprehensive GPS data
+  async updateTruckLocation(
+    truckId: number, 
+    locationData: {
+      latitude: number;
+      longitude: number;
+      altitude?: number;
+      speed_kmh?: number;
+      heading_degrees?: number;
+      accuracy_meters?: number;
+      source?: string;
+    }
+  ): Promise<{
+    truck_id: number;
+    latitude: number;
+    longitude: number;
+    altitude: number;
+    speed_kmh: number;
+    heading_degrees: number;
+    accuracy_meters: number;
+    source: string;
+    id: number;
+    timestamp: string;
+  }> {
     const response = await fetch(`${API_BASE_URL}/fleet/trucks/${truckId}/location`, {
-      method: 'PUT',
+      method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify({ 
-        current_location_lat: lat, 
-        current_location_lng: lng 
+      body: JSON.stringify({
+        truck_id: truckId,
+        ...locationData
       }),
     });
 
-    return this.handleResponse<Truck>(response);
+    return this.handleResponse<{
+      truck_id: number;
+      latitude: number;
+      longitude: number;
+      altitude: number;
+      speed_kmh: number;
+      heading_degrees: number;
+      accuracy_meters: number;
+      source: string;
+      id: number;
+      timestamp: string;
+    }>(response);
+  }
+
+  // Simple location update (backward compatibility)
+  async updateTruckLocationSimple(truckId: number, lat: number, lng: number): Promise<Truck> {
+    await this.updateTruckLocation(truckId, {
+      latitude: lat,
+      longitude: lng,
+      source: 'MANUAL'
+    });
+    
+    // Return updated truck data
+    return this.getTruckById(truckId);
+  }
+
+  // Get truck location history with pagination
+  async getTruckLocationHistory(truckId: number, skip: number = 0, limit: number = 100): Promise<TruckLocationRecord[]> {
+    const params = new URLSearchParams();
+    params.append('skip', Math.max(0, skip).toString());
+    params.append('limit', Math.min(Math.max(limit, 1), 100).toString());
+
+    const response = await fetch(`${API_BASE_URL}/fleet/trucks/${truckId}/location?${params.toString()}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<TruckLocationRecord[]>(response);
   }
 
   // Get total count of trucks for pagination
@@ -451,6 +538,26 @@ class FleetService {
     });
 
     return this.handleResponse<Fleet>(response);
+  }
+
+  // Unassign driver by driver ID (Admin only)
+  async unassignDriver(driverId: number): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/fleet/assign/${driverId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<{ message: string }>(response);
+  }
+
+  // Get fleet summary (Admin only)
+  async getFleetSummary(): Promise<FleetSummary> {
+    const response = await fetch(`${API_BASE_URL}/fleet/summary`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<FleetSummary>(response);
   }
 }
 

@@ -51,6 +51,12 @@ import HorizontaLDots from "./horizontal-dots.svg";
 import ChatIcon from "./chat.svg";
 import MoreDotIcon from "./more-dot.svg";
 import BellIcon from "./bell.svg";
+import PhoneIcon from "./phone.svg";
+import LocationIcon from "./location.svg";
+import ClockIcon from "./clock.svg";
+import TruckIcon from "./truck.svg";
+import UserSolidIcon from "./user.svg";
+import WrenchIcon from "./wrench.svg";
 
 export {
   DownloadIcon,
@@ -106,4 +112,10 @@ export {
   HorizontaLDots,
   ChevronUpIcon,
   ChatIcon,
+  PhoneIcon,
+  LocationIcon,
+  ClockIcon,
+  TruckIcon,
+  UserSolidIcon,
+  WrenchIcon,
 };
