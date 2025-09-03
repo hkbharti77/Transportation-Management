@@ -329,6 +329,41 @@ def get_fleets(
     fleets = query.offset(skip).limit(limit).all()
     return fleets
 
+# ==================== FLEET SUMMARY ====================
+
+@router.get("/summary", response_model=FleetSummary)
+def get_fleet_summary(
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Get fleet summary (Admin only)"""
+    total_trucks = db.query(Truck).filter(Truck.is_active == True).count()
+    available_trucks = db.query(Truck).filter(
+        Truck.is_active == True, Truck.status == TruckStatus.AVAILABLE
+    ).count()
+    busy_trucks = db.query(Truck).filter(
+        Truck.is_active == True, Truck.status == TruckStatus.BUSY
+    ).count()
+    maintenance_trucks = db.query(Truck).filter(
+        Truck.is_active == True, Truck.status == TruckStatus.MAINTENANCE
+    ).count()
+    
+    total_drivers = db.query(Driver).filter(Driver.status != DriverStatus.SUSPENDED).count()
+    available_drivers = db.query(Driver).filter(
+        Driver.status == DriverStatus.ACTIVE, Driver.is_available == True
+    ).count()
+    on_trip_drivers = db.query(Driver).filter(Driver.status == DriverStatus.ON_TRIP).count()
+    
+    return FleetSummary(
+        total_trucks=total_trucks,
+        available_trucks=available_trucks,
+        busy_trucks=busy_trucks,
+        maintenance_trucks=maintenance_trucks,
+        total_drivers=total_drivers,
+        available_drivers=available_drivers,
+        on_trip_drivers=on_trip_drivers
+    )
+
 @router.get("/{fleet_id}", response_model=FleetWithTrucks)
 def get_fleet(
     fleet_id: int,
@@ -498,37 +533,4 @@ def get_truck_location_history(
     
     return locations
 
-# ==================== FLEET SUMMARY ====================
-
-@router.get("/summary", response_model=FleetSummary)
-def get_fleet_summary(
-    current_user: User = Depends(require_admin),
-    db: Session = Depends(get_db)
-):
-    """Get fleet summary (Admin only)"""
-    total_trucks = db.query(Truck).filter(Truck.is_active == True).count()
-    available_trucks = db.query(Truck).filter(
-        Truck.is_active == True, Truck.status == TruckStatus.AVAILABLE
-    ).count()
-    busy_trucks = db.query(Truck).filter(
-        Truck.is_active == True, Truck.status == TruckStatus.BUSY
-    ).count()
-    maintenance_trucks = db.query(Truck).filter(
-        Truck.is_active == True, Truck.status == TruckStatus.MAINTENANCE
-    ).count()
-    
-    total_drivers = db.query(Driver).filter(Driver.status != DriverStatus.SUSPENDED).count()
-    available_drivers = db.query(Driver).filter(
-        Driver.status == DriverStatus.ACTIVE, Driver.is_available == True
-    ).count()
-    on_trip_drivers = db.query(Driver).filter(Driver.status == DriverStatus.ON_TRIP).count()
-    
-    return FleetSummary(
-        total_trucks=total_trucks,
-        available_trucks=available_trucks,
-        busy_trucks=busy_trucks,
-        maintenance_trucks=maintenance_trucks,
-        total_drivers=total_drivers,
-        available_drivers=available_drivers,
-        on_trip_drivers=on_trip_drivers
-    )
+# ==================== ASSIGNMENT MANAGEMENT ====================
