@@ -5,8 +5,11 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 
+// Optimize font loading with display swap and preload
 const outfit = Outfit({
   subsets: ["latin"],
+  display: 'swap', // Add font display swap for faster rendering
+  preload: true,   // Preload critical fonts
 });
 
 export default function RootLayout({

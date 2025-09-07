@@ -84,19 +84,22 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link href="/" className="lg:hidden">
+            {/* Optimize logo images with priority loading */}
             <Image
               width={154}
               height={32}
               className="dark:hidden"
-              src="./images/logo/logo.svg"
+              src="/images/logo/logo.svg"
               alt="Logo"
+              priority={true}
             />
             <Image
               width={154}
               height={32}
               className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
+              src="/images/logo/logo-dark.svg"
               alt="Logo"
+              priority={true}
             />
           </Link>
 

@@ -118,4 +118,10 @@ export {
   TruckIcon,
   UserSolidIcon,
   WrenchIcon,
+  // Icon aliases for vehicle management components
+  PencilIcon as EditIcon,
+  TrashBinIcon as TrashIcon,
+  EyeIcon as SearchIcon,       // Using eye icon for search
+  GridIcon as FilterIcon,      // Using grid icon for filter
+  CloseIcon as ClearIcon,
 };

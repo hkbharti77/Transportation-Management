@@ -89,45 +89,45 @@ export default function TruckDetailsPage() {
   const getStatusBadge = (status: Truck['status']) => {
     switch (status) {
       case 'available':
-        return <Badge variant="success">Available</Badge>;
+        return <Badge variant="light" color="success">Available</Badge>;
       case 'in_use':
-        return <Badge variant="warning">In Use</Badge>;
+        return <Badge variant="light" color="warning">In Use</Badge>;
       case 'maintenance':
-        return <Badge variant="danger">Maintenance</Badge>;
+        return <Badge variant="light" color="error">Maintenance</Badge>;
       case 'out_of_service':
-        return <Badge variant="secondary">Out of Service</Badge>;
+        return <Badge variant="light" color="dark">Out of Service</Badge>;
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="light" color="dark">Unknown</Badge>;
     }
   };
 
   const getTruckTypeBadge = (type: Truck['truck_type']) => {
     switch (type) {
       case 'small_truck':
-        return <Badge variant="primary">Small Truck</Badge>;
+        return <Badge variant="light" color="primary">Small Truck</Badge>;
       case 'medium_truck':
-        return <Badge variant="info">Medium Truck</Badge>;
+        return <Badge variant="light" color="info">Medium Truck</Badge>;
       case 'large_truck':
-        return <Badge variant="warning">Large Truck</Badge>;
+        return <Badge variant="light" color="warning">Large Truck</Badge>;
       case 'container_truck':
-        return <Badge variant="danger">Container Truck</Badge>;
+        return <Badge variant="light" color="error">Container Truck</Badge>;
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="light" color="dark">Unknown</Badge>;
     }
   };
 
   const getFuelTypeBadge = (fuelType: Truck['fuel_type']) => {
     switch (fuelType) {
       case 'Diesel':
-        return <Badge variant="primary">Diesel</Badge>;
+        return <Badge variant="light" color="primary">Diesel</Badge>;
       case 'Petrol':
-        return <Badge variant="warning">Petrol</Badge>;
+        return <Badge variant="light" color="warning">Petrol</Badge>;
       case 'Electric':
-        return <Badge variant="success">Electric</Badge>;
+        return <Badge variant="light" color="success">Electric</Badge>;
       case 'Hybrid':
-        return <Badge variant="info">Hybrid</Badge>;
+        return <Badge variant="light" color="info">Hybrid</Badge>;
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="light" color="dark">Unknown</Badge>;
     }
   };
 
@@ -194,9 +194,9 @@ export default function TruckDetailsPage() {
               Edit
             </Button>
             <Button
-              variant="danger"
+              variant="outline"
               onClick={handleDelete}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-950/20"
             >
               <TrashBinIcon className="h-4 w-4" />
               Delete
@@ -395,9 +395,9 @@ export default function TruckDetailsPage() {
                   <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Status</label>
                   <div className="mt-1">
                     {truck.is_active ? (
-                      <Badge variant="success">Active</Badge>
+                      <Badge variant="light" color="success">Active</Badge>
                     ) : (
-                      <Badge variant="secondary">Inactive</Badge>
+                      <Badge variant="light" color="error">Inactive</Badge>
                     )}
                   </div>
                 </div>

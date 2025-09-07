@@ -76,19 +76,63 @@ const adminSidebar: NavItem[] = [
       { name: "Vehicles", path: "/vehicles", pro: false },
       { name: "Fleet Drivers", path: "/fleet-drivers", pro: false },
       { name: "Maintenance", path: "/maintenance", pro: false },
+      { name: "Service Management", path: "/fleet-management/services", pro: false },
       { name: "Parts Inventory", path: "/parts", pro: false },
     ],
   },
   {
     icon: <TaskIcon />,
-    name: "Orders & Bookings",
+    name: "Order Management",
     subItems: [
+      { name: "Order Dashboard", path: "/orders/dashboard", pro: false },
+      { name: "All Orders", path: "/orders", pro: false },
+      { name: "Create Order", path: "/orders/create", pro: false },
       { name: "Active Orders", path: "/orders/active", pro: false },
       { name: "Completed Orders", path: "/orders/completed", pro: false },
-      { name: "Pending Requests", path: "/orders/pending", pro: false },
+      { name: "Pending Orders", path: "/orders/pending", pro: false },
+      { name: "Cancelled Orders", path: "/orders/cancelled", pro: false },
+      { name: "Order Analytics", path: "/orders/analytics", pro: false },
+      { name: "Popular Routes", path: "/orders/routes", pro: false },
+      { name: "Order Tracking", path: "/orders/tracking", pro: false },
+    ],
+  },
+  {
+    icon: <PlugInIcon />,
+    name: "Booking Management",
+    subItems: [
+      { name: "Booking Dashboard", path: "/bookings/dashboard", pro: false },
       { name: "All Bookings", path: "/bookings", pro: false },
+      { name: "New Bookings", path: "/bookings/new", pro: false },
+      { name: "Confirmed Bookings", path: "/bookings/confirmed", pro: false },
+      { name: "Cancelled Bookings", path: "/bookings/cancelled", pro: false },
+      { name: "Booking Analytics", path: "/bookings/analytics", pro: false },
+      { name: "Payment Management", path: "/bookings/payments", pro: false },
       { name: "Public Services", path: "/public-services", pro: false },
       { name: "Tickets", path: "/tickets", pro: false },
+    ],
+  },
+  {
+    icon: <ArrowRightIcon />,
+    name: "Trip Management",
+    subItems: [
+      { name: "Trip Dashboard", path: "/trips/dashboard", pro: false },
+      { name: "All Trips", path: "/trips", pro: false },
+      { name: "Create Trip", path: "/trips/create", pro: false },
+      { name: "Scheduled Trips", path: "/trips/scheduled", pro: false },
+      { name: "Active Trips", path: "/trips/active", pro: false },
+      { name: "Completed Trips", path: "/trips/completed", pro: false },
+      { name: "Trip Analytics", path: "/trips/analytics", pro: false },
+      { name: "Passenger Bookings", path: "/bookings", pro: false },
+    ],
+  },
+  {
+    icon: <ListIcon />,
+    name: "Route Management",
+    subItems: [
+      { name: "All Routes", path: "/routes", pro: false },
+      { name: "Create Route", path: "/routes/create", pro: false },
+      { name: "Active Routes", path: "/routes?status=active", pro: false },
+      { name: "Route Analytics", path: "/routes/analytics", pro: false },
     ],
   },
 ];
@@ -136,19 +180,26 @@ const customerSidebar: NavItem[] = [
 // ======================= Driver Sidebar =======================
 const driverSidebar: NavItem[] = [
   {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/driver-home",
+  },
+  {
     icon: <TaskIcon />,
     name: "Work",
     subItems: [
-      { name: "Assigned Orders", path: "/orders", pro: false },
-      { name: "Active Trips", path: "/trips", pro: false },
-      { name: "Trip History", path: "/trip-history", pro: false },
+      { name: "My Dashboard", path: "/driver-dashboard", pro: false },
+      { name: "Assigned Orders", path: "/driver-dashboard#orders", pro: false },
+      { name: "Active Trips", path: "/driver-dashboard#trips", pro: false },
+      { name: "Trip History", path: "/driver-dashboard#history", pro: false },
     ],
   },
   {
     icon: <BoxIcon />,
-    name: "Vehicle",
+    name: "Fleet",
     subItems: [
-      { name: "My Vehicle", path: "/vehicle", pro: false },
+      { name: "My Vehicle", path: "/driver-dashboard#vehicle", pro: false },
+      { name: "Vehicle Directory", path: "/vehicle-directory", pro: false },
       { name: "Vehicle Status", path: "/vehicle-status", pro: false },
       { name: "Maintenance", path: "/maintenance", pro: false },
     ],
@@ -157,7 +208,7 @@ const driverSidebar: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Account",
     subItems: [
-      { name: "My Profile", path: "/profile", pro: false },
+      { name: "My Profile", path: "/driver-profile", pro: false },
       { name: "Notifications", path: "/notifications", pro: false },
       { name: "Settings", path: "/settings", pro: false },
     ],
@@ -169,8 +220,8 @@ const driverSidebar: NavItem[] = [
 // Helper function to determine user role based on pathname
 const getUserRole = (pathname: string): "admin" | "customer" | "driver" => {
   if (pathname.startsWith("/admin")) return "admin";
-  if (pathname.startsWith("/driver")) return "driver";
-  if (pathname.startsWith("/customer") || pathname.startsWith("/dashboard")) return "customer";
+  if (pathname.startsWith("/driver") || pathname === "/driver-dashboard" || pathname === "/driver-home") return "driver";
+  if (pathname.startsWith("/customer") || pathname === "/dashboard") return "customer";
   return "admin"; // Default to admin instead of "default"
 };
 
@@ -410,6 +461,7 @@ const AppSidebar: React.FC = () => {
                 alt="Logo"
                 width={150}
                 height={40}
+                style={{ width: 'auto', height: 'auto' }}
               />
               <Image
                 className="hidden dark:block"
@@ -417,6 +469,7 @@ const AppSidebar: React.FC = () => {
                 alt="Logo"
                 width={150}
                 height={40}
+                style={{ width: 'auto', height: 'auto' }}
               />
             </>
           ) : (
@@ -425,6 +478,7 @@ const AppSidebar: React.FC = () => {
               alt="Logo"
               width={32}
               height={32}
+              style={{ width: 'auto', height: 'auto' }}
             />
           )}
         </Link>

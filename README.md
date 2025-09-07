@@ -74,6 +74,8 @@ TailAdmin is a pre-designed starting point for building a web-based dashboard us
 - Tables and Charts(Line and Bar)
 - Authentication forms and input elements
 - Alerts, Dropdowns, Modals, Buttons and more
+- Service Management System for fleet maintenance
+- Parts Inventory Management
 - Can't forget Dark Mode 🕶️
 
 All components are built with React and styled using Tailwind CSS for easy customization.
@@ -96,6 +98,12 @@ All components are built with React and styled using Tailwind CSS for easy custo
 To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
 
 ## Changelog
+
+### Version 2.0.3 - [September 7, 2025]
+
+- Added Service Management System for fleet maintenance
+- Added Parts Inventory Management functionality
+- Enhanced Fleet Management capabilities
 
 ### Version 2.0.2 - [March 25, 2025]
 

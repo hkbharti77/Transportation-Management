@@ -111,15 +111,15 @@ export default function PublicManagersPage() {
 
   const getStatusBadge = (isActive: boolean) => {
     return isActive ? (
-      <Badge variant="success">Active</Badge>
+      <Badge variant="light" color="success">Active</Badge>
     ) : (
-      <Badge variant="secondary">Inactive</Badge>
+      <Badge variant="light" color="error">Inactive</Badge>
     );
   };
 
   const getRoleBadge = (role: string) => {
     return (
-      <Badge variant="info">{role.replace('_', ' ').toUpperCase()}</Badge>
+      <Badge variant="light" color="info">{role.replace('_', ' ').toUpperCase()}</Badge>
     );
   };
 
@@ -144,7 +144,7 @@ export default function PublicManagersPage() {
           </Button>
         </div>
 
-        <ComponentCard>
+        <ComponentCard title="Public Service Managers">
           {/* Search and Filter Bar */}
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-1 max-w-md items-center gap-2">
@@ -233,8 +233,9 @@ export default function PublicManagersPage() {
                           </Button>
                           <Button
                             size="sm"
-                            variant="danger"
+                            variant="outline"
                             onClick={() => handleDeleteManager(manager.id!)}
+                            className="text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-950/20"
                           >
                             <TrashBinIcon className="h-4 w-4" />
                           </Button>

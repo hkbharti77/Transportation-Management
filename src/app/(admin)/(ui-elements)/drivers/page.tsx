@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { userService, User, PaginatedResponse } from '@/services/userService';
 import ComponentCard from '@/components/common/ComponentCard';
 import Button from '@/components/ui/button/Button';
@@ -27,6 +28,7 @@ import {
 import AddDriverModal from '@/components/drivers/AddDriverModal';
 
 export default function DriversPage() {
+  const router = useRouter();
   const [drivers, setDrivers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +55,27 @@ export default function DriversPage() {
   const [roleChangeSuccess, setRoleChangeSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if user is authenticated and admin
+    if (!userService.isAuthenticated()) {
+      router.push('/signin');
+      return;
+    }
+
+    if (!userService.isCurrentUserAdmin()) {
+      // Redirect non-admin users based on their role
+      const currentUser = userService.getCurrentUserFromStorage();
+      if (currentUser?.role === 'customer') {
+        router.push('/dashboard');
+      } else if (currentUser?.role === 'driver') {
+        router.push('/driver-dashboard');
+      } else {
+        router.push('/signin');
+      }
+      return;
+    }
+
     loadDrivers();
-  }, [currentPage, limit]);
+  }, [currentPage, limit, router]);
 
   const loadDrivers = async () => {
     try {
@@ -406,14 +427,40 @@ export default function DriversPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => router.push(`/users/${driver.id}`)}
+                          >
                             <EyeIcon className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => router.push(`/users/${driver.id}/edit`)}
+                          >
                             <PencilIcon className="h-4 w-4" />
                           </Button>
-                          <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                            <TrashBinIcon className="h-4 w-4" />
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleToggleStatus(driver)}
+                            disabled={toggleLoading === driver.id}
+                            className={driver.is_active ? "text-yellow-600 hover:text-yellow-700" : "text-green-600 hover:text-green-700"}
+                          >
+                            {toggleLoading === driver.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                            ) : (
+                              <span>{driver.is_active ? 'Deactivate' : 'Activate'}</span>
+                            )}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleChangeRole(driver)}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            Role
                           </Button>
                         </div>
                       </TableCell>
@@ -464,6 +511,85 @@ export default function DriversPage() {
         onClose={handleCloseAddDriverModal}
         onDriverAdded={handleDriverAdded}
       />
+
+      {/* Role Change Modal */}
+      {roleModalOpen && driverToChangeRole && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Change User Role
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Change role for {driverToChangeRole.name}?
+            </p>
+            
+            {roleChangeError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700">
+                {roleChangeError}
+              </div>
+            )}
+            
+            {roleChangeSuccess && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-700">
+                {roleChangeSuccess}
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Select New Role
+              </label>
+              <select
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
+              >
+                <option value="admin">Admin</option>
+                <option value="driver">Driver</option>
+                <option value="customer">Customer</option>
+                <option value="staff">Staff</option>
+                <option value="public_service_manager">Public Service Manager</option>
+              </select>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={cancelRoleChange}
+                disabled={roleChangeLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmRoleChange}
+                disabled={roleChangeLoading || newRole === driverToChangeRole.role}
+              >
+                {roleChangeLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Changing...
+                  </div>
+                ) : (
+                  'Change Role'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Messages */}
+      {toggleSuccess && (
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg p-4 z-50">
+          <p className="text-green-800">{toggleSuccess}</p>
+        </div>
+      )}
+      
+      {toggleError && (
+        <div className="fixed top-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 z-50">
+          <p className="text-red-800">{toggleError}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -66,15 +66,15 @@ export default function PublicManagerDetailsPage() {
 
   const getStatusBadge = (isActive: boolean) => {
     return isActive ? (
-      <Badge variant="success">Active</Badge>
+      <Badge variant="light" color="success">Active</Badge>
     ) : (
-      <Badge variant="secondary">Inactive</Badge>
+      <Badge variant="light" color="error">Inactive</Badge>
     );
   };
 
   const getRoleBadge = (role: string) => {
     return (
-      <Badge variant="info">{role.replace('_', ' ').toUpperCase()}</Badge>
+      <Badge variant="light" color="info">{role.replace('_', ' ').toUpperCase()}</Badge>
     );
   };
 
@@ -133,9 +133,9 @@ export default function PublicManagerDetailsPage() {
               Edit
             </Button>
             <Button
-              variant="danger"
+              variant="outline"
               onClick={handleDelete}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-950/20"
             >
               <TrashBinIcon className="h-4 w-4" />
               Delete
@@ -147,7 +147,7 @@ export default function PublicManagerDetailsPage() {
           {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <ComponentCard>
+            <ComponentCard title="Basic Information">
               <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
                 Basic Information
               </h3>
@@ -180,7 +180,7 @@ export default function PublicManagerDetailsPage() {
             </ComponentCard>
 
             {/* Account Information */}
-            <ComponentCard>
+            <ComponentCard title="Account Information">
               <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
                 Account Information
               </h3>
@@ -204,7 +204,7 @@ export default function PublicManagerDetailsPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <ComponentCard>
+            <ComponentCard title="Quick Actions">
               <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
                 Quick Actions
               </h3>
@@ -226,9 +226,9 @@ export default function PublicManagerDetailsPage() {
                   View All Managers
                 </Button>
                 <Button
-                  variant="danger"
+                  variant="outline"
                   onClick={handleDelete}
-                  className="w-full justify-start"
+                  className="w-full justify-start text-error-600 border-error-300 hover:bg-error-50 dark:text-error-400 dark:border-error-700 dark:hover:bg-error-950/20"
                 >
                   <TrashBinIcon className="h-4 w-4 mr-2" />
                   Delete Manager
@@ -237,7 +237,7 @@ export default function PublicManagerDetailsPage() {
             </ComponentCard>
 
             {/* System Information */}
-            <ComponentCard>
+            <ComponentCard title="System Information">
               <h3 className="text-lg font-semibold text-black dark:text-white mb-4">
                 System Information
               </h3>

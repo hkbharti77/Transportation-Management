@@ -262,6 +262,17 @@ class UserService {
     return this.handleResponse<User>(response);
   }
 
+  // Update current user profile
+  async updateCurrentUser(userData: Partial<User>): Promise<User> {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(userData),
+    });
+
+    return this.handleResponse<User>(response);
+  }
+
   // Get single user by ID
   async getUserById(userId: number): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
