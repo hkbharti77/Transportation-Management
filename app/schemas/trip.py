@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.trip import TripStatus
@@ -31,6 +31,12 @@ class TripUpdate(BaseModel):
     available_seats: Optional[int] = None
     total_seats: Optional[int] = None
     status: Optional[TripStatus] = None
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Trip Response Schema
 class Trip(TripBase):

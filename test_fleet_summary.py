@@ -58,22 +58,23 @@ def test_health_check():
         response = requests.get("http://localhost:8000/health")
         if response.status_code == 200:
             print("✅ Server is running")
-            return True
+            assert True  # Server is running
         else:
             print("❌ Server responded with error")
-            return False
-    except:
+            assert False, "Server responded with error"
+    except Exception as e:
         print("❌ Server is not running")
-        return False
+        assert False, f"Server is not running: {e}"
 
 if __name__ == "__main__":
     print("🔍 Fleet Summary Endpoint Test")
     print("=" * 50)
     
-    # Check if server is running
-    if test_health_check():
+    # Check if server is running first
+    try:
+        test_health_check()
         test_fleet_summary()
-    else:
+    except AssertionError:
         print("\n💡 To start the server:")
         print("   1. python main.py")
         print("   2. Then run this test again")

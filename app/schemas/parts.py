@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models.parts_inventory import PartCategory, PartStatus
@@ -16,6 +16,12 @@ class PartsInventoryBase(BaseModel):
     min_stock_level: int = 0
     max_stock_level: Optional[int] = None
     location: Optional[str] = None
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Create Parts Inventory Schema
 class PartsInventoryCreate(PartsInventoryBase):
@@ -35,6 +41,18 @@ class PartsInventoryUpdate(BaseModel):
     location: Optional[str] = None
     status: Optional[PartStatus] = None
     is_active: Optional[bool] = None
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Parts Inventory Response Schema
 class PartsInventory(PartsInventoryBase):

@@ -31,14 +31,26 @@ class Service(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     vehicle_id = Column(Integer, ForeignKey("vehicles.id"), nullable=False)
-    service_type = Column(Enum(ServiceType), nullable=False)
+    service_type = Column(Enum(
+        ServiceType,
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        name="vehicle_servicetype",
+    ), nullable=False)
     description = Column(Text, nullable=False)
     scheduled_date = Column(DateTime, nullable=False)
     estimated_duration = Column(Integer, nullable=False)  # in minutes
     actual_duration = Column(Integer, nullable=True)  # in minutes
     cost = Column(Float, nullable=False)
-    status = Column(Enum(ServiceStatus), default=ServiceStatus.SCHEDULED, nullable=False)
-    priority = Column(Enum(ServicePriority), default=ServicePriority.MEDIUM, nullable=False)
+    status = Column(Enum(
+        ServiceStatus,
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        name="vehicle_servicestatus",
+    ), default=ServiceStatus.SCHEDULED, nullable=False)
+    priority = Column(Enum(
+        ServicePriority,
+        values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        name="vehicle_servicepriority",
+    ), default=ServicePriority.MEDIUM, nullable=False)
     assigned_mechanic_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     notes = Column(Text, nullable=True)
     completed_at = Column(DateTime, nullable=True)

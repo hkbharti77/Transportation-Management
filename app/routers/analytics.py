@@ -237,7 +237,7 @@ def get_maintenance_schedule_overview(
 def get_service_cost_analysis(
     start_date: datetime = Query(default=None),
     end_date: datetime = Query(default=None),
-    group_by: str = Query(default="month", regex="^(month|week|day|vehicle|service_type)$"),
+    group_by: str = Query(default="month", pattern="^(month|week|day|vehicle|service_type)$"),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):

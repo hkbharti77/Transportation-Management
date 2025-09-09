@@ -7,7 +7,7 @@ from app.models.user import User
 from app.models.service import Service, ServiceStatus, ServiceType
 from app.models.parts_inventory import PartsInventory
 from app.models.parts_usage import PartsUsage
-from app.schemas.service import ServiceCreate, Service as ServiceSchema, ServiceUpdate, ServiceStatusUpdate
+from app.schemas.service import ServiceCreate, Service as ServiceSchema, ServiceUpdate, ServiceStatusUpdate, ServiceList
 from app.schemas.parts import PartsInventoryCreate, PartsInventory as PartsInventorySchema, PartsInventoryUpdate, PartsUsageCreate, StockUpdate
 from app.models.log import Log
 from datetime import datetime
@@ -22,26 +22,70 @@ def create_service(
     db: Session = Depends(get_db)
 ):
     """Create a new service record (Admin only)"""
-    db_service = Service(**service.dict())
-    
+    # Dump enums as their values to align with DB enums
+    try:
+        service_data = service.model_dump(by_alias=False, exclude_unset=True, exclude_none=True, round_trip=False, warnings=None, use_enum_values=True)  # type: ignore[arg-type]
+    except TypeError:
+        # Fallback for Pydantic v1
+        service_data = service.dict()
+        if hasattr(service, 'service_type'):
+            service_data['service_type'] = getattr(service.service_type, 'value', service.service_type)
+        if hasattr(service, 'priority'):
+            service_data['priority'] = getattr(service.priority, 'value', service.priority)
+
+    # Coerce status to DB's expected label (enum VALUE, e.g., 'scheduled') if provided
+    from app.models.service import ServiceStatus as _SvcStatus  # local alias to avoid confusion
+    input_status = service_data.pop('status', None)
+    if input_status is not None:
+        # Try interpret as enum value first (e.g., 'scheduled'), else as name (e.g., 'SCHEDULED')
+        try:
+            status_enum = _SvcStatus(input_status)
+        except Exception:
+            try:
+                status_enum = _SvcStatus[input_status]
+            except Exception:
+                # Fallback: lowercase string
+                service_data['status'] = str(input_status).lower()
+            else:
+                service_data['status'] = status_enum.value
+        else:
+            service_data['status'] = status_enum.value
+
+    # Validate optional foreign keys
+    assigned_mechanic_id = service_data.get("assigned_mechanic_id")
+    if assigned_mechanic_id is not None:
+        mechanic = db.query(User).filter(User.id == assigned_mechanic_id).first()
+        if mechanic is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Assigned mechanic with ID {assigned_mechanic_id} not found")
+
+    db_service = Service(**service_data)
     db.add(db_service)
-    db.commit()
+
+    try:
+        db.commit()
+    except Exception as ex:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to create service: {str(ex)}")
+
     db.refresh(db_service)
     
-    # Log the action
-    log = Log(
-        user_id=current_user.id,
-        action="create_service",
-        resource_type="service",
-        resource_id=db_service.id,
-        details={"service_type": service.service_type.value, "vehicle_id": service.vehicle_id}
-    )
-    db.add(log)
-    db.commit()
+    # Log the action (best-effort)
+    try:
+        log = Log(
+            user_id=current_user.id,
+            action="create_service",
+            resource_type="service",
+            resource_id=db_service.id,
+            details={"service_type": getattr(service.service_type, 'value', service.service_type), "vehicle_id": service.vehicle_id}
+        )
+        db.add(log)
+        db.commit()
+    except Exception:
+        db.rollback()
     
     return db_service
 
-@router.get("/", response_model=List[ServiceSchema])
+@router.get("/", response_model=List[ServiceList])
 def get_services(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -51,7 +95,7 @@ def get_services(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get services with pagination and filtering"""
+    """Get services with pagination and filtering (limited fields)"""
     query = db.query(Service)
     
     if status:
@@ -64,19 +108,17 @@ def get_services(
     # Non-admin users can only see services for vehicles they have access to
     if current_user.role.value != "admin":
         if current_user.role.value == "driver":
-            # Drivers can see services for their assigned vehicle
             if hasattr(current_user, 'driver_profile') and current_user.driver_profile.assigned_vehicle:
                 query = query.filter(Service.vehicle_id == current_user.driver_profile.assigned_vehicle.id)
             else:
-                query = query.filter(Service.id == 0)  # No results for drivers without vehicles
+                query = query.filter(Service.id == 0)
         else:
-            # Other users see no services
             query = query.filter(Service.id == 0)
     
     services = query.offset(skip).limit(limit).all()
     return services
 
-@router.get("/{service_id}", response_model=ServiceSchema)
+@router.get("/{service_id:int}", response_model=ServiceSchema)
 def get_service(
     service_id: int,
     current_user: User = Depends(get_current_user),
@@ -102,7 +144,7 @@ def get_service(
     
     return service
 
-@router.put("/{service_id}/status", response_model=ServiceSchema)
+@router.put("/{service_id:int}/status", response_model=ServiceSchema)
 def update_service_status(
     service_id: int,
     status_update: ServiceStatusUpdate,
@@ -125,14 +167,19 @@ def update_service_status(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
     
     # Update service
-    service.status = status_update.status
+    new_status_value = getattr(status_update.status, 'value', None)
+    if not new_status_value:
+        tmp = getattr(status_update.status, 'name', status_update.status)
+        new_status_value = str(tmp).lower()
+    service.status = new_status_value
     if status_update.actual_duration:
         service.actual_duration = status_update.actual_duration
     if status_update.notes:
         service.notes = status_update.notes
     
     # Set completion time if service is completed
-    if status_update.status == ServiceStatus.COMPLETED:
+    from app.models.service import ServiceStatus as _SvcStatus  # local alias to avoid confusion
+    if new_status_value == _SvcStatus.COMPLETED.value:
         service.completed_at = datetime.utcnow()
     
     db.commit()
@@ -144,7 +191,7 @@ def update_service_status(
         action="update_service_status",
         resource_type="service",
         resource_id=service.id,
-        details={"new_status": status_update.status.value}
+        details={"new_status": new_status_value}
     )
     db.add(log)
     db.commit()
@@ -159,7 +206,15 @@ def create_part(
     db: Session = Depends(get_db)
 ):
     """Create a new part in inventory (Admin only)"""
-    db_part = PartsInventory(**part.dict())
+    # Build payload and serialize enum fields
+    try:
+        part_data = part.model_dump(use_enum_values=True)  # pydantic v2
+    except Exception:
+        part_data = part.dict()
+        if hasattr(part, 'category'):
+            part_data['category'] = getattr(part.category, 'value', part.category)
+    
+    db_part = PartsInventory(**part_data)
     
     db.add(db_part)
     db.commit()
@@ -171,7 +226,7 @@ def create_part(
         action="create_part",
         resource_type="parts_inventory",
         resource_id=db_part.id,
-        details={"part_number": part.part_number, "name": part.name}
+        details={"part_number": db_part.part_number, "name": db_part.name}
     )
     db.add(log)
     db.commit()
@@ -184,6 +239,7 @@ def get_parts(
     limit: int = Query(100, ge=1, le=100),
     category: Optional[str] = None,
     status: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get parts inventory with pagination and filtering"""
@@ -251,7 +307,7 @@ def update_part_stock(
     return part
 
 # Service Parts Usage Endpoints
-@router.post("/{service_id}/parts", response_model=dict)
+@router.post("/{service_id:int}/parts", response_model=dict)
 def add_parts_to_service(
     service_id: int,
     parts_usage: List[PartsUsageCreate],

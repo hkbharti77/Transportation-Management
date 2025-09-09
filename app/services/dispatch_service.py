@@ -41,7 +41,7 @@ class DispatchService:
         dispatch = Dispatch(
             booking_id=dispatch_data.booking_id,
             assigned_driver=assigned_driver,
-            status=DispatchStatus.PENDING
+            status=DispatchStatus.PENDING.value  # Use the string value directly
         )
         
         self.db.add(dispatch)
@@ -61,7 +61,7 @@ class DispatchService:
         """Get all dispatches with optional status filter"""
         query = self.db.query(Dispatch)
         if status:
-            query = query.filter(Dispatch.status == status)
+            query = query.filter(Dispatch.status == status.value)  # Use the string value directly
         return query.offset(skip).limit(limit).all()
     
     def get_driver_dispatches(self, driver_id: int, skip: int = 0, limit: int = 100) -> List[Dispatch]:
@@ -109,7 +109,7 @@ class DispatchService:
                 detail="Dispatch not found"
             )
         
-        dispatch.status = status_update.status
+        dispatch.status = status_update.status.value  # Use the string value directly
         
         # Update times based on status
         if status_update.status == DispatchStatus.DISPATCHED and status_update.dispatch_time:
@@ -123,7 +123,7 @@ class DispatchService:
         if status_update.status == DispatchStatus.COMPLETED:
             booking = self.db.query(Booking).filter(Booking.booking_id == dispatch.booking_id).first()
             if booking:
-                booking.booking_status = BookingStatus.COMPLETED
+                booking.booking_status = BookingStatus.COMPLETED.value  # Use the string value directly
                 booking.updated_at = datetime.utcnow()
         
         self.db.commit()
@@ -140,7 +140,7 @@ class DispatchService:
             )
         
         # Only allow updates if dispatch is not completed or cancelled
-        if dispatch.status in [DispatchStatus.COMPLETED, DispatchStatus.CANCELLED]:
+        if dispatch.status in [DispatchStatus.COMPLETED.value, DispatchStatus.CANCELLED.value]:  # Use the string values directly
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot update completed or cancelled dispatch"
@@ -148,7 +148,11 @@ class DispatchService:
         
         update_data = dispatch_update.dict(exclude_unset=True)
         for field, value in update_data.items():
-            setattr(dispatch, field, value)
+            # Handle enum fields explicitly
+            if field == 'status' and hasattr(value, 'value'):
+                setattr(dispatch, field, value.value)
+            else:
+                setattr(dispatch, field, value)
         
         dispatch.updated_at = datetime.utcnow()
         self.db.commit()
@@ -164,19 +168,19 @@ class DispatchService:
                 detail="Dispatch not found"
             )
         
-        if dispatch.status in [DispatchStatus.COMPLETED, DispatchStatus.CANCELLED]:
+        if dispatch.status in [DispatchStatus.COMPLETED.value, DispatchStatus.CANCELLED.value]:  # Use the string values directly
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Dispatch is already completed or cancelled"
             )
         
-        dispatch.status = DispatchStatus.CANCELLED
+        dispatch.status = DispatchStatus.CANCELLED.value  # Use the string value directly
         dispatch.updated_at = datetime.utcnow()
         
         # Update booking status
         booking = self.db.query(Booking).filter(Booking.booking_id == dispatch.booking_id).first()
         if booking:
-            booking.booking_status = BookingStatus.CANCELLED
+            booking.booking_status = BookingStatus.CANCELLED.value  # Use the string value directly
             booking.updated_at = datetime.utcnow()
         
         self.db.commit()

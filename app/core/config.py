@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     api_v1_str: str = os.getenv("API_V1_STR", "/api/v1")
     project_name: str = os.getenv("PROJECT_NAME", "Transportation Management System")
     
+    # Small Business Configuration
+    small_business_mode: bool = os.getenv("SMALL_BUSINESS_MODE", "True").lower() == "true"
+    max_fleet_size: int = int(os.getenv("MAX_FLEET_SIZE", "20"))  # Limit for small business
+    auto_dispatch: bool = os.getenv("AUTO_DISPATCH", "True").lower() == "true"
+    simple_pricing: bool = os.getenv("SIMPLE_PRICING", "True").lower() == "true"
+    
     # CORS Settings
     backend_cors_origins: List[str] = [
         "http://localhost:3000",

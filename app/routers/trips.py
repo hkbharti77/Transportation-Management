@@ -6,6 +6,9 @@ from app.core.deps import get_current_user, require_admin, require_driver_or_adm
 from app.models.user import User
 from app.models.trip import Trip, TripStatus
 from app.models.trip_booking import TripBooking, BookingStatus
+from app.models.route import Route
+from app.models.vehicle import Vehicle
+from app.models.fleet import Driver
 from app.schemas.trip import TripCreate, Trip as TripSchema, TripUpdate, TripBookingCreate, TripBooking as TripBookingSchema
 from app.models.log import Log
 from datetime import datetime
@@ -19,7 +22,61 @@ def create_trip(
     db: Session = Depends(get_db)
 ):
     """Create a new trip (Admin only)"""
-    db_trip = Trip(**trip.dict())
+    
+    # Validate that route exists
+    route = db.query(Route).filter(Route.id == trip.route_id).first()
+    if not route:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Route with id {trip.route_id} not found"
+        )
+    
+    # Validate that vehicle exists
+    vehicle = db.query(Vehicle).filter(Vehicle.id == trip.vehicle_id).first()
+    if not vehicle:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Vehicle with id {trip.vehicle_id} not found"
+        )
+    
+    # Validate that driver exists
+    driver = db.query(Driver).filter(Driver.id == trip.driver_id).first()
+    if not driver:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Driver with id {trip.driver_id} not found"
+        )
+    
+    # Validate business logic
+    if trip.departure_time >= trip.arrival_time:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Departure time must be before arrival time"
+        )
+    
+    if trip.available_seats > trip.total_seats:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Available seats cannot exceed total seats"
+        )
+    
+    if trip.available_seats < 0 or trip.total_seats < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Seat counts must be non-negative"
+        )
+    
+    if trip.fare < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Fare must be non-negative"
+        )
+    
+    # Create the trip with explicit enum value conversion
+    trip_data = trip.dict()
+    trip_data['status'] = trip.status.value
+    
+    db_trip = Trip(**trip_data)
     
     db.add(db_trip)
     db.commit()
@@ -31,7 +88,7 @@ def create_trip(
         action="create_trip",
         resource_type="trip",
         resource_id=db_trip.id,
-        details={"trip_id": db_trip.id}
+        details={"trip_id": db_trip.id, "route_id": trip.route_id, "vehicle_id": trip.vehicle_id}
     )
     db.add(log)
     db.commit()
@@ -157,7 +214,7 @@ def update_trip_status(
             detail="Not enough permissions"
         )
     
-    trip.status = status_update
+    trip.status = status_update.value  # Use the string value directly
     
     # Set actual times if starting/completing
     if status_update == TripStatus.IN_PROGRESS:
@@ -180,6 +237,58 @@ def update_trip_status(
     db.commit()
     
     return trip
+
+@router.get("/resources", response_model=dict)
+def get_trip_resources(
+    db: Session = Depends(get_db)
+):
+    """Get available resources for creating trips (routes, vehicles, drivers)"""
+    
+    # Get active routes
+    routes = db.query(Route).filter(Route.is_active == True).all()
+    route_list = [
+        {
+            "id": route.id,
+            "route_number": route.route_number,
+            "start_point": route.start_point,
+            "end_point": route.end_point,
+            "base_fare": route.base_fare,
+            "estimated_time": route.estimated_time
+        }
+        for route in routes
+    ]
+    
+    # Get active vehicles
+    vehicles = db.query(Vehicle).all()
+    vehicle_list = [
+        {
+            "id": vehicle.id,
+            "type": vehicle.type.value if vehicle.type else None,
+            "license_plate": vehicle.license_plate,
+            "model": vehicle.model,
+            "capacity": vehicle.capacity,
+            "status": vehicle.status.value if vehicle.status else None
+        }
+        for vehicle in vehicles
+    ]
+    
+    # Get available drivers
+    drivers = db.query(Driver).filter(Driver.is_available == True).all()
+    driver_list = [
+        {
+            "id": driver.id,
+            "user_id": driver.user_id,
+            "license_number": driver.license_number,
+            "is_available": driver.is_available
+        }
+        for driver in drivers
+    ]
+    
+    return {
+        "routes": route_list,
+        "vehicles": vehicle_list,
+        "drivers": driver_list
+    }
 
 @router.get("/{trip_id}/bookings", response_model=List[TripBookingSchema])
 def get_trip_bookings(

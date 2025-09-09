@@ -21,7 +21,7 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user_id: int = payload.get("sub")
+    user_id = payload.get("sub")
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -40,7 +40,7 @@ def get_current_user(
     return user
 
 def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
-    if not current_user.is_active:
+    if current_user.is_active is False:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Inactive user"
@@ -49,7 +49,7 @@ def get_current_active_user(current_user: User = Depends(get_current_user)) -> U
 
 def require_role(required_role: UserRole):
     def role_checker(current_user: User = Depends(get_current_active_user)) -> User:
-        if current_user.role != required_role:
+        if current_user.role.value != required_role.value:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not enough permissions"
@@ -58,7 +58,7 @@ def require_role(required_role: UserRole):
     return role_checker
 
 def require_admin(current_user: User = Depends(get_current_active_user)) -> User:
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role.value != UserRole.ADMIN.value:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
@@ -66,7 +66,7 @@ def require_admin(current_user: User = Depends(get_current_active_user)) -> User
     return current_user
 
 def require_driver_or_admin(current_user: User = Depends(get_current_active_user)) -> User:
-    if current_user.role not in [UserRole.DRIVER, UserRole.ADMIN]:
+    if current_user.role.value not in [UserRole.DRIVER.value, UserRole.ADMIN.value]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Driver or admin access required"

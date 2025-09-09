@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.vehicle import VehicleType, VehicleStatus
@@ -12,9 +12,21 @@ class VehicleBase(BaseModel):
     year: Optional[int] = None
     status: VehicleStatus = VehicleStatus.ACTIVE
 
+    @field_validator('type', mode='before')
+    def convert_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 # Create Vehicle Schema
 class VehicleCreate(VehicleBase):
-    pass
+    assigned_driver_id: Optional[int] = None
 
 # Update Vehicle Schema
 class VehicleUpdate(BaseModel):
@@ -25,6 +37,18 @@ class VehicleUpdate(BaseModel):
     year: Optional[int] = None
     assigned_driver_id: Optional[int] = None
     status: Optional[VehicleStatus] = None
+
+    @field_validator('type', mode='before')
+    def convert_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Vehicle Response Schema
 class Vehicle(VehicleBase):

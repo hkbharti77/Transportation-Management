@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.dispatch import DispatchStatus
@@ -14,6 +14,12 @@ class DispatchUpdate(BaseModel):
     dispatch_time: Optional[datetime] = Field(None, description="When driver is dispatched")
     arrival_time: Optional[datetime] = Field(None, description="When driver arrives at destination")
     status: Optional[DispatchStatus] = Field(None, description="Dispatch status")
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class DispatchResponse(DispatchBase):
     dispatch_id: int
@@ -31,6 +37,12 @@ class DispatchStatusUpdate(BaseModel):
     status: DispatchStatus = Field(..., description="New dispatch status")
     dispatch_time: Optional[datetime] = Field(None, description="Dispatch time")
     arrival_time: Optional[datetime] = Field(None, description="Arrival time")
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class DispatchListResponse(BaseModel):
     dispatches: list[DispatchResponse]

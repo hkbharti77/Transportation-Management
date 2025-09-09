@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from app.models.payment import PaymentMethod, PaymentStatus, InvoiceStatus
@@ -12,6 +12,12 @@ class PaymentGatewayRequest(BaseModel):
     customer_name: str = Field(..., description="Customer name")
     description: str = Field(..., description="Payment description")
     reference_id: str = Field(..., description="Reference ID for tracking")
+
+    @field_validator('payment_method', mode='before')
+    def convert_payment_method_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class PaymentGatewayResponse(BaseModel):
     success: bool = Field(..., description="Payment success status")
@@ -30,6 +36,12 @@ class PaymentBase(BaseModel):
     order_id: Optional[int] = Field(None, description="Associated order ID")
     trip_id: Optional[int] = Field(None, description="Associated trip ID")
 
+    @field_validator('method', mode='before')
+    def convert_method_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class PaymentCreate(PaymentBase):
     user_id: int = Field(..., description="User ID")
     invoice_id: Optional[int] = Field(None, description="Associated invoice ID")
@@ -41,6 +53,12 @@ class PaymentUpdate(BaseModel):
     gateway_reference: Optional[str] = Field(None, description="Gateway reference")
     payment_time: Optional[datetime] = Field(None, description="Payment time")
     gateway_response: Optional[str] = Field(None, description="Gateway response")
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class PaymentResponse(PaymentBase):
     payment_id: int
@@ -106,6 +124,12 @@ class InvoiceUpdate(BaseModel):
     billing_address: Optional[str] = Field(None, description="Billing address")
     shipping_address: Optional[str] = Field(None, description="Shipping address")
 
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class InvoiceResponse(InvoiceBase):
     invoice_id: int
     user_id: int
@@ -152,6 +176,12 @@ class PaymentProcessResponse(BaseModel):
     message: str = Field(..., description="Processing message")
     redirect_url: Optional[str] = Field(None, description="Redirect URL if needed")
 
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 # Invoice generation schemas
 class InvoiceGenerateRequest(BaseModel):
     booking_id: Optional[int] = Field(None, description="Booking ID")
@@ -175,6 +205,12 @@ class PaymentStatusUpdate(BaseModel):
     status: PaymentStatus = Field(..., description="New status")
     gateway_response: Optional[str] = Field(None, description="Gateway response")
 
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 # Filter and search schemas
 class PaymentFilter(BaseModel):
     user_id: Optional[int] = Field(None, description="Filter by user ID")
@@ -184,12 +220,30 @@ class PaymentFilter(BaseModel):
     start_date: Optional[date] = Field(None, description="Start date for filtering")
     end_date: Optional[date] = Field(None, description="End date for filtering")
 
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('method', mode='before')
+    def convert_method_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class InvoiceFilter(BaseModel):
     user_id: Optional[int] = Field(None, description="Filter by user ID")
     status: Optional[InvoiceStatus] = Field(None, description="Filter by invoice status")
     start_date: Optional[date] = Field(None, description="Start date for filtering")
     end_date: Optional[date] = Field(None, description="End date for filtering")
     overdue: Optional[bool] = Field(None, description="Filter overdue invoices")
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Response schemas
 class PaymentListResponse(BaseModel):

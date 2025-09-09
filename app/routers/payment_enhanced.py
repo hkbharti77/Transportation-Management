@@ -61,6 +61,15 @@ def get_user_payments(
     service = PaymentEnhancedService(db)
     return service.get_user_payments(user_id, skip=skip, limit=limit)
 
+@router.get("/booking/{booking_id}", response_model=List[PaymentResponse])
+def get_booking_payments(
+    booking_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get all payments for a specific booking"""
+    service = PaymentEnhancedService(db)
+    return service.get_booking_payments(booking_id)
+
 @router.put("/{payment_id}", response_model=PaymentResponse)
 def update_payment(
     payment_id: int,

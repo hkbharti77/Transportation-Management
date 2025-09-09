@@ -14,10 +14,10 @@ def test_imports():
         from app.schemas.user import UserCreate
         from app.routers.auth import router as auth_router
         print("✅ All imports successful!")
-        return True
+        assert True  # If we reach here, imports succeeded
     except ImportError as e:
         print(f"❌ Import error: {e}")
-        return False
+        assert False, f"Import error: {e}"
 
 def test_config():
     """Test configuration loading"""
@@ -26,10 +26,10 @@ def test_config():
         assert hasattr(settings, 'database_url')
         assert hasattr(settings, 'secret_key')
         print("✅ Configuration loaded successfully!")
-        return True
+        assert True  # If we reach here, config loaded successfully
     except Exception as e:
         print(f"❌ Configuration error: {e}")
-        return False
+        assert False, f"Configuration error: {e}"
 
 def test_models():
     """Test database models"""
@@ -44,10 +44,10 @@ def test_models():
         assert hasattr(Order, '__tablename__')
         
         print("✅ Database models are properly defined!")
-        return True
+        assert True  # If we reach here, models are properly defined
     except Exception as e:
         print(f"❌ Model error: {e}")
-        return False
+        assert False, f"Model error: {e}"
 
 if __name__ == "__main__":
     print("🧪 Running basic tests...")

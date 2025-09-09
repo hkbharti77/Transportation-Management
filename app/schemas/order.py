@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.order import OrderStatus, CargoType
@@ -13,6 +13,12 @@ class OrderBase(BaseModel):
     pickup_time: datetime
     estimated_delivery_time: datetime
     total_amount: float
+
+    @field_validator('cargo_type', mode='before')
+    def convert_cargo_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Create Order Schema
 class OrderCreate(OrderBase):
@@ -32,6 +38,18 @@ class OrderUpdate(BaseModel):
     status: Optional[OrderStatus] = None
     actual_delivery_time: Optional[datetime] = None
     total_amount: Optional[float] = None
+
+    @field_validator('cargo_type', mode='before')
+    def convert_cargo_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Order Response Schema
 class Order(OrderBase):

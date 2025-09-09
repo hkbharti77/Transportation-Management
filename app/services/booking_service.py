@@ -16,14 +16,14 @@ class BookingService:
     
     def create_booking(self, booking_data: BookingCreate) -> Booking:
         """Create a new booking and auto-assign truck and driver"""
-        # Create the booking
+        # Create the booking with explicit enum value conversion
         booking = Booking(
             user_id=booking_data.user_id,
             source=booking_data.source,
             destination=booking_data.destination,
-            service_type=booking_data.service_type,
+            service_type=booking_data.service_type.value,  # Use the string value directly
             price=booking_data.price,
-            booking_status=BookingStatus.PENDING
+            booking_status=BookingStatus.PENDING.value  # Use the string value directly
         )
         
         self.db.add(booking)
@@ -35,7 +35,7 @@ class BookingService:
         # Create dispatch record
         dispatch = Dispatch(
             booking_id=booking.booking_id,
-            status=DispatchStatus.PENDING
+            status=DispatchStatus.PENDING.value  # Use the string value directly
         )
         self.db.add(dispatch)
         
@@ -48,14 +48,14 @@ class BookingService:
         # Find available truck based on service type
         truck_query = self.db.query(Vehicle).filter(
             and_(
-                Vehicle.status == VehicleStatus.ACTIVE,
-                Vehicle.type == VehicleType.TRUCK,
+                Vehicle.status == VehicleStatus.ACTIVE.value,  # Use the string value directly
+                Vehicle.type == VehicleType.TRUCK.value,  # Use the string value directly
                 Vehicle.assigned_driver_id.isnot(None)  # Has assigned driver
             )
         )
         
         # For cargo service, prefer trucks with higher capacity
-        if booking.service_type == ServiceType.CARGO:
+        if booking.service_type == ServiceType.CARGO.value:  # Use the string value directly
             truck_query = truck_query.order_by(Vehicle.capacity.desc())
         else:
             # For public service, any truck is fine
@@ -71,11 +71,11 @@ class BookingService:
         
         # Assign truck and driver
         booking.truck_id = available_truck.id
-        booking.booking_status = BookingStatus.CONFIRMED
+        booking.booking_status = BookingStatus.CONFIRMED.value  # Use the string value directly
         
         # Update truck status to indicate it's assigned
-        available_truck.status = VehicleStatus.ACTIVE  # Keep active but assigned
-    
+        available_truck.status = VehicleStatus.ACTIVE.value  # Use the string value directly
+
     def get_booking(self, booking_id: int) -> Optional[Booking]:
         """Get booking by ID"""
         return self.db.query(Booking).filter(Booking.booking_id == booking_id).first()
@@ -90,7 +90,7 @@ class BookingService:
         """Get all bookings with optional status filter"""
         query = self.db.query(Booking)
         if status:
-            query = query.filter(Booking.booking_status == status)
+            query = query.filter(Booking.booking_status == status.value)  # Use the string value directly
         return query.offset(skip).limit(limit).all()
     
     def update_booking_status(self, booking_id: int, status_update: BookingStatusUpdate) -> Booking:
@@ -102,14 +102,14 @@ class BookingService:
                 detail="Booking not found"
             )
         
-        booking.booking_status = status_update.booking_status
+        booking.booking_status = status_update.booking_status.value  # Use the string value directly
         booking.updated_at = datetime.utcnow()
         
         # If booking is completed, update dispatch status
         if status_update.booking_status == BookingStatus.COMPLETED:
             dispatch = self.db.query(Dispatch).filter(Dispatch.booking_id == booking_id).first()
             if dispatch:
-                dispatch.status = DispatchStatus.COMPLETED
+                dispatch.status = DispatchStatus.COMPLETED.value  # Use the string value directly
                 dispatch.arrival_time = datetime.utcnow()
         
         self.db.commit()
@@ -134,7 +134,13 @@ class BookingService:
         
         update_data = booking_update.dict(exclude_unset=True)
         for field, value in update_data.items():
-            setattr(booking, field, value)
+            # Handle enum fields explicitly
+            if field == 'service_type' and hasattr(value, 'value'):
+                setattr(booking, field, value.value)
+            elif field == 'booking_status' and hasattr(value, 'value'):
+                setattr(booking, field, value.value)
+            else:
+                setattr(booking, field, value)
         
         booking.updated_at = datetime.utcnow()
         self.db.commit()
@@ -150,25 +156,25 @@ class BookingService:
                 detail="Booking not found"
             )
         
-        if booking.booking_status in [BookingStatus.COMPLETED, BookingStatus.CANCELLED]:
+        if booking.booking_status in [BookingStatus.COMPLETED.value, BookingStatus.CANCELLED.value]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Booking is already completed or cancelled"
             )
         
-        booking.booking_status = BookingStatus.CANCELLED
+        booking.booking_status = BookingStatus.CANCELLED.value  # Use the string value directly
         booking.updated_at = datetime.utcnow()
         
         # Update dispatch status
         dispatch = self.db.query(Dispatch).filter(Dispatch.booking_id == booking_id).first()
         if dispatch:
-            dispatch.status = DispatchStatus.CANCELLED
+            dispatch.status = DispatchStatus.CANCELLED.value  # Use the string value directly
         
         # Free up the truck
         if booking.truck_id:
             truck = self.db.query(Vehicle).filter(Vehicle.id == booking.truck_id).first()
             if truck:
-                truck.status = VehicleStatus.ACTIVE
+                truck.status = VehicleStatus.ACTIVE.value  # Use the string value directly
         
         self.db.commit()
         self.db.refresh(booking)

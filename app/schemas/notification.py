@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models.notification import NotificationType, NotificationStatus, NotificationCategory
@@ -10,6 +10,18 @@ class NotificationBase(BaseModel):
     notification_type: NotificationType = Field(..., description="Notification type")
     category: NotificationCategory = Field(..., description="Notification category")
     priority: str = Field(default="normal", description="Notification priority")
+
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class NotificationCreate(NotificationBase):
     user_id: int = Field(..., description="User ID")
@@ -23,6 +35,12 @@ class NotificationUpdate(BaseModel):
     priority: Optional[str] = None
     scheduled_at: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = None
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class NotificationResponse(NotificationBase):
     notification_id: int
@@ -50,6 +68,18 @@ class NotificationTemplateBase(BaseModel):
     category: NotificationCategory = Field(..., description="Notification category")
     is_active: bool = Field(default=True, description="Template status")
 
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class NotificationTemplateCreate(NotificationTemplateBase):
     variables: Optional[Dict[str, Any]] = Field(None, description="Template variables")
 
@@ -61,6 +91,18 @@ class NotificationTemplateUpdate(BaseModel):
     category: Optional[NotificationCategory] = None
     is_active: Optional[bool] = None
     variables: Optional[Dict[str, Any]] = None
+
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class NotificationTemplateResponse(NotificationTemplateBase):
     template_id: int
@@ -76,6 +118,18 @@ class NotificationPreferenceBase(BaseModel):
     notification_type: NotificationType = Field(..., description="Notification type")
     category: NotificationCategory = Field(..., description="Notification category")
     is_enabled: bool = Field(default=True, description="Preference status")
+
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class NotificationPreferenceCreate(NotificationPreferenceBase):
     user_id: int = Field(..., description="User ID")
@@ -99,6 +153,12 @@ class BroadcastMessageBase(BaseModel):
     notification_type: NotificationType = Field(..., description="Notification type")
     target_audience: str = Field(..., description="Target audience")
 
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class BroadcastMessageCreate(BroadcastMessageBase):
     scheduled_at: Optional[datetime] = Field(None, description="Scheduled send time")
 
@@ -108,6 +168,12 @@ class BroadcastMessageUpdate(BaseModel):
     notification_type: Optional[NotificationType] = None
     target_audience: Optional[str] = None
     scheduled_at: Optional[datetime] = None
+
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class BroadcastMessageResponse(BroadcastMessageBase):
     broadcast_id: int
@@ -135,6 +201,18 @@ class SendNotificationRequest(BaseModel):
     template_variables: Optional[Dict[str, Any]] = Field(None, description="Template variables")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 class SendNotificationResponse(BaseModel):
     success: bool = Field(..., description="Send success status")
     notifications_created: int = Field(..., description="Number of notifications created")
@@ -150,6 +228,12 @@ class NotificationDeliveryStatus(BaseModel):
     read_at: Optional[datetime] = None
     error_message: Optional[str] = None
 
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
 # Notification filtering and search schemas
 class NotificationFilter(BaseModel):
     user_id: Optional[int] = Field(None, description="Filter by user ID")
@@ -160,6 +244,24 @@ class NotificationFilter(BaseModel):
     start_date: Optional[datetime] = Field(None, description="Start date filter")
     end_date: Optional[datetime] = Field(None, description="End date filter")
     is_read: Optional[bool] = Field(None, description="Filter by read status")
+
+    @field_validator('notification_type', mode='before')
+    def convert_notification_type_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('category', mode='before')
+    def convert_category_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+    @field_validator('status', mode='before')
+    def convert_status_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 class NotificationListResponse(BaseModel):
     notifications: List[NotificationResponse]

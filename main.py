@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from app.core.config import settings
-from app.routers import auth, orders, trips, services, analytics, users, fleet as fleet_router, bookings, dispatches, payment_enhanced, public_service as public_service_router, tracking as tracking_router, notifications as notifications_router, admin_dashboard
+from app.routers import auth, orders, trips, services, analytics, users, fleet as fleet_router, bookings, dispatches, payment_enhanced, public_service as public_service_router, tracking as tracking_router, notifications as notifications_router, admin_dashboard, vehicles, routes
 from app.models import user, vehicle, order, route, trip, trip_booking, payment, log, service, service_history, parts_inventory, parts_usage, maintenance_schedule, fleet as fleet_models, booking, dispatch, public_service, tracking as tracking_models, notification as notification_models, admin_dashboard as admin_models
 from app.core.database import engine
 import time
@@ -45,6 +45,8 @@ async def add_process_time_header(request: Request, call_next):
 # Include routers
 app.include_router(auth.router, prefix=settings.api_v1_str)
 app.include_router(users.router, prefix=settings.api_v1_str)
+app.include_router(vehicles.router, prefix=settings.api_v1_str)
+app.include_router(routes.router, prefix=settings.api_v1_str)
 app.include_router(fleet_router.router, prefix=settings.api_v1_str)
 app.include_router(orders.router, prefix=settings.api_v1_str)
 app.include_router(trips.router, prefix=settings.api_v1_str)

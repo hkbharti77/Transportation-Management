@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from app.models.fleet import TruckStatus, TruckType, DriverStatus
@@ -43,7 +43,8 @@ class TruckBase(BaseModel):
     assigned_driver_id: Optional[int] = None
 
 class TruckCreate(TruckBase):
-    @validator('fleet_id', 'assigned_driver_id', pre=True)
+    @field_validator('fleet_id', 'assigned_driver_id', mode='before')
+    @classmethod
     def convert_zero_to_none(cls, v):
         """Convert 0 values to None for foreign key fields"""
         if v == 0:
@@ -68,7 +69,8 @@ class TruckUpdate(BaseModel):
     status: Optional[TruckStatus] = None
     is_active: Optional[bool] = None
     
-    @validator('fleet_id', 'assigned_driver_id', pre=True)
+    @field_validator('fleet_id', 'assigned_driver_id', mode='before')
+    @classmethod
     def convert_zero_to_none(cls, v):
         """Convert 0 values to None for foreign key fields"""
         if v == 0:

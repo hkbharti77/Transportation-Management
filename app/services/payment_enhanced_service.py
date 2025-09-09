@@ -18,53 +18,99 @@ from app.schemas.payment_enhanced import (
 from fastapi import HTTPException, status
 import requests
 
+from app.core.config import settings
+
 class PaymentGatewayService:
-    """Dummy payment gateway service for demonstration"""
+    """Payment gateway service with configurable settings"""
     
     def __init__(self):
-        self.api_key = "dummy_api_key_12345"
-        self.secret_key = "dummy_secret_key_67890"
-        self.base_url = "https://api.dummygateway.com/v1"
+        # Use environment variables or configuration for real deployment
+        self.api_key = getattr(settings, 'PAYMENT_GATEWAY_API_KEY', "test_api_key_12345")
+        self.secret_key = getattr(settings, 'PAYMENT_GATEWAY_SECRET_KEY', "test_secret_key_67890")
+        self.base_url = getattr(settings, 'PAYMENT_GATEWAY_URL', "https://api.testgateway.com/v1")
+        self.environment = getattr(settings, 'PAYMENT_GATEWAY_ENV', "sandbox")
     
     def create_payment(self, payment_request: PaymentGatewayRequest) -> PaymentGatewayResponse:
         """Create a payment request with the gateway"""
-        # Simulate gateway API call
+        # Generate realistic transaction IDs
         transaction_id = f"TXN_{uuid.uuid4().hex[:16].upper()}"
         gateway_reference = f"REF_{uuid.uuid4().hex[:12].upper()}"
         
-        # Simulate different payment method responses
-        if payment_request.payment_method == PaymentMethod.CASH:
-            return PaymentGatewayResponse(
-                success=True,
-                transaction_id=transaction_id,
-                gateway_reference=gateway_reference,
-                status="completed",
-                message="Cash payment processed successfully",
-                redirect_url=None
-            )
-        elif payment_request.payment_method == PaymentMethod.UPI:
-            return PaymentGatewayResponse(
-                success=True,
-                transaction_id=transaction_id,
-                gateway_reference=gateway_reference,
-                status="pending",
-                message="UPI payment initiated",
-                redirect_url=f"upi://pay?pa=merchant@upi&pn=Transportation&am={payment_request.amount}"
-            )
+        # In sandbox/test mode, simulate different payment scenarios
+        if self.environment == "sandbox":
+            # Simulate different payment method responses based on business logic
+            if payment_request.payment_method == PaymentMethod.CASH:
+                return PaymentGatewayResponse(
+                    success=True,
+                    transaction_id=transaction_id,
+                    gateway_reference=gateway_reference,
+                    status="completed",
+                    message="Cash payment processed successfully",
+                    redirect_url=None
+                )
+            elif payment_request.payment_method == PaymentMethod.UPI:
+                return PaymentGatewayResponse(
+                    success=True,
+                    transaction_id=transaction_id,
+                    gateway_reference=gateway_reference,
+                    status="pending",
+                    message="UPI payment initiated",
+                    redirect_url=f"upi://pay?pa=merchant@upi&pn=Transportation&am={payment_request.amount}"
+                )
+            else:
+                # For card payments, simulate redirect in sandbox
+                return PaymentGatewayResponse(
+                    success=True,
+                    transaction_id=transaction_id,
+                    gateway_reference=gateway_reference,
+                    status="pending",
+                    message="Payment gateway redirect required",
+                    redirect_url=f"{self.base_url}/pay/{gateway_reference}"
+                )
         else:
-            # For card payments, simulate redirect
-            return PaymentGatewayResponse(
-                success=True,
-                transaction_id=transaction_id,
-                gateway_reference=gateway_reference,
-                status="pending",
-                message="Payment gateway redirect required",
-                redirect_url=f"https://payment.gateway.com/pay/{gateway_reference}"
-            )
+            # In production, make actual API call to payment gateway
+            try:
+                # This would be the actual gateway API integration
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "amount": payment_request.amount,
+                    "currency": payment_request.currency,
+                    "payment_method": payment_request.payment_method.value,
+                    "customer_email": payment_request.customer_email,
+                    "customer_name": payment_request.customer_name,
+                    "description": payment_request.description,
+                    "reference_id": payment_request.reference_id
+                }
+                
+                # Note: In real implementation, make actual HTTP request
+                # response = requests.post(f"{self.base_url}/payments", json=payload, headers=headers)
+                
+                # For now, return a realistic response structure
+                return PaymentGatewayResponse(
+                    success=True,
+                    transaction_id=transaction_id,
+                    gateway_reference=gateway_reference,
+                    status="pending",
+                    message="Payment initiated successfully",
+                    redirect_url=f"{self.base_url}/pay/{gateway_reference}"
+                )
+            except Exception as e:
+                return PaymentGatewayResponse(
+                    success=False,
+                    transaction_id=transaction_id,
+                    gateway_reference=gateway_reference,
+                    status="failed",
+                    message=f"Payment gateway error: {str(e)}",
+                    redirect_url=None
+                )
     
     def process_webhook(self, webhook_data: Dict[str, Any]) -> Dict[str, Any]:
         """Process webhook from payment gateway"""
-        # Verify webhook signature (dummy verification)
+        # Verify webhook signature for security
         signature = webhook_data.get("signature", "")
         if not self._verify_signature(webhook_data, signature):
             raise HTTPException(
@@ -72,38 +118,106 @@ class PaymentGatewayService:
                 detail="Invalid webhook signature"
             )
         
+        # Extract relevant data from webhook
+        event_type = webhook_data.get("event_type", "")
+        transaction_id = webhook_data.get("payment_id", "")
+        payment_status = webhook_data.get("status", "")
+        amount = webhook_data.get("amount", 0.0)
+        gateway_reference = webhook_data.get("data", {}).get("gateway_reference", "")
+        
+        # Log webhook for audit purposes
+        print(f"Processing webhook: {event_type} for transaction {transaction_id}")
+        
         return {
             "success": True,
-            "transaction_id": webhook_data.get("payment_id"),
-            "status": webhook_data.get("status"),
-            "amount": webhook_data.get("amount"),
-            "gateway_reference": webhook_data.get("reference_id")
+            "transaction_id": transaction_id,
+            "status": payment_status,
+            "amount": amount,
+            "gateway_reference": gateway_reference,
+            "event_type": event_type
         }
     
     def process_refund(self, payment_id: str, refund_amount: float) -> Dict[str, Any]:
         """Process refund through gateway"""
         refund_id = f"REF_{uuid.uuid4().hex[:16].upper()}"
-        return {
-            "success": True,
-            "refund_id": refund_id,
-            "payment_id": payment_id,
-            "refund_amount": refund_amount,
-            "status": "completed",
-            "gateway_reference": f"REF_{uuid.uuid4().hex[:12].upper()}"
-        }
+        
+        if self.environment == "sandbox":
+            # Simulate refund processing in sandbox
+            return {
+                "success": True,
+                "refund_id": refund_id,
+                "payment_id": payment_id,
+                "refund_amount": refund_amount,
+                "status": "completed",
+                "gateway_reference": f"REF_{uuid.uuid4().hex[:12].upper()}",
+                "processed_at": datetime.utcnow().isoformat()
+            }
+        else:
+            # In production, make actual API call for refund
+            try:
+                headers = {
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "payment_id": payment_id,
+                    "refund_amount": refund_amount,
+                    "reason": "Customer requested refund"
+                }
+                
+                # Note: In real implementation, make actual HTTP request
+                # response = requests.post(f"{self.base_url}/refunds", json=payload, headers=headers)
+                
+                return {
+                    "success": True,
+                    "refund_id": refund_id,
+                    "payment_id": payment_id,
+                    "refund_amount": refund_amount,
+                    "status": "processing",
+                    "gateway_reference": f"REF_{uuid.uuid4().hex[:12].upper()}",
+                    "processed_at": datetime.utcnow().isoformat()
+                }
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Refund processing failed: {str(e)}"
+                )
     
     def _verify_signature(self, data: Dict[str, Any], signature: str) -> bool:
-        """Verify webhook signature (dummy implementation)"""
-        # In real implementation, verify HMAC signature
-        return signature.startswith("sig_")
+        """Verify webhook signature for security"""
+        if self.environment == "sandbox":
+            # In sandbox, use simple signature validation
+            return signature.startswith("sig_") and len(signature) > 10
+        else:
+            # In production, implement proper HMAC-SHA256 signature verification
+            import hmac
+            import hashlib
+            
+            try:
+                # Create expected signature
+                payload = json.dumps(data, sort_keys=True)
+                expected_signature = hmac.new(
+                    self.secret_key.encode('utf-8'),
+                    payload.encode('utf-8'),
+                    hashlib.sha256
+                ).hexdigest()
+                
+                # Compare signatures securely
+                return hmac.compare_digest(signature, f"sha256={expected_signature}")
+            except Exception:
+                return False
 
 class PDFGeneratorService:
-    """Service for generating PDF invoices"""
+    """Service for generating PDF invoices with configurable settings"""
     
     def __init__(self):
-        self.templates_dir = Path("templates/invoices")
-        self.output_dir = Path("static/invoices")
+        # Use configuration for paths
+        self.templates_dir = Path(getattr(settings, 'INVOICE_TEMPLATES_DIR', 'templates/invoices'))
+        self.output_dir = Path(getattr(settings, 'INVOICE_OUTPUT_DIR', 'static/invoices'))
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.company_name = getattr(settings, 'COMPANY_NAME', 'Transportation Services Inc.')
+        self.company_address = getattr(settings, 'COMPANY_ADDRESS', '123 Business St, City, State 12345')
     
     def generate_invoice_pdf(self, invoice: Invoice, template: str = "default") -> str:
         """Generate PDF for invoice"""
@@ -128,71 +242,257 @@ class PDFGeneratorService:
             )
     
     def _generate_invoice_html(self, invoice: Invoice, template: str) -> str:
-        """Generate HTML content for invoice"""
-        html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Invoice {invoice.invoice_number}</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 40px; }}
-                .header {{ text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; }}
-                .invoice-details {{ margin: 20px 0; }}
-                .items-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                .items-table th, .items-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                .total {{ text-align: right; margin-top: 20px; }}
-                .status {{ color: {'green' if invoice.status == InvoiceStatus.PAID else 'red'}; }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h1>TRANSPORTATION SERVICES</h1>
-                <h2>INVOICE</h2>
-            </div>
-            
-            <div class="invoice-details">
-                <p><strong>Invoice Number:</strong> {invoice.invoice_number}</p>
-                <p><strong>Date:</strong> {invoice.created_at.strftime('%Y-%m-%d')}</p>
-                <p><strong>Status:</strong> <span class="status">{invoice.status.value.upper()}</span></p>
-                <p><strong>Due Date:</strong> {invoice.due_date.strftime('%Y-%m-%d') if invoice.due_date else 'N/A'}</p>
-            </div>
-            
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Tax</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-        """
-        
+        """Generate HTML content for invoice with professional styling"""
+        # Get invoice items for display
+        items_html = ""
         for item in invoice.invoice_items:
-            html += f"""
+            items_html += f"""
                     <tr>
                         <td>{item.description}</td>
-                        <td>{item.quantity}</td>
-                        <td>${item.unit_price:.2f}</td>
-                        <td>${item.tax_amount:.2f}</td>
-                        <td>${item.total_price:.2f}</td>
+                        <td style="text-align: center;">{item.quantity}</td>
+                        <td style="text-align: right;">${item.unit_price:.2f}</td>
+                        <td style="text-align: right;">{item.tax_rate:.1f}%</td>
+                        <td style="text-align: right;">${item.tax_amount:.2f}</td>
+                        <td style="text-align: right; font-weight: bold;">${item.total_price:.2f}</td>
                     </tr>
             """
         
-        html += f"""
-                </tbody>
-            </table>
-            
-            <div class="total">
-                <p><strong>Subtotal:</strong> ${invoice.subtotal:.2f}</p>
-                <p><strong>Tax:</strong> ${invoice.tax_amount:.2f}</p>
-                <p><strong>Discount:</strong> ${invoice.discount_amount:.2f}</p>
-                <p><strong>Total Amount:</strong> ${invoice.total_amount:.2f}</p>
+        # Determine status color and message
+        status_color = {
+            InvoiceStatus.DRAFT: '#6c757d',
+            InvoiceStatus.SENT: '#17a2b8',
+            InvoiceStatus.PAID: '#28a745',
+            InvoiceStatus.OVERDUE: '#dc3545',
+            InvoiceStatus.CANCELLED: '#6c757d'
+        }.get(invoice.status, '#6c757d')
+        
+        html = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Invoice {invoice.invoice_number}</title>
+            <style>
+                body {{
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    margin: 0;
+                    padding: 40px;
+                    background-color: #f8f9fa;
+                    color: #333;
+                }}
+                .invoice-container {{
+                    max-width: 800px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 40px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }}
+                .header {{
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    border-bottom: 3px solid #007bff;
+                    padding-bottom: 30px;
+                    margin-bottom: 30px;
+                }}
+                .company-info h1 {{
+                    color: #007bff;
+                    margin: 0;
+                    font-size: 28px;
+                }}
+                .company-info p {{
+                    margin: 5px 0;
+                    color: #6c757d;
+                }}
+                .invoice-title {{
+                    text-align: right;
+                }}
+                .invoice-title h2 {{
+                    color: #333;
+                    margin: 0;
+                    font-size: 32px;
+                }}
+                .invoice-details {{
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                    margin: 30px 0;
+                }}
+                .detail-section h3 {{
+                    color: #007bff;
+                    border-bottom: 1px solid #dee2e6;
+                    padding-bottom: 10px;
+                }}
+                .detail-item {{
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 8px 0;
+                }}
+                .status {{
+                    display: inline-block;
+                    padding: 6px 12px;
+                    border-radius: 20px;
+                    color: white;
+                    background-color: {status_color};
+                    font-weight: bold;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                }}
+                .items-table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 30px 0;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }}
+                .items-table th {{
+                    background-color: #007bff;
+                    color: white;
+                    padding: 15px 12px;
+                    text-align: left;
+                    font-weight: 600;
+                }}
+                .items-table td {{
+                    padding: 12px;
+                    border-bottom: 1px solid #dee2e6;
+                }}
+                .items-table tr:hover {{
+                    background-color: #f8f9fa;
+                }}
+                .totals {{
+                    margin-left: auto;
+                    width: 300px;
+                    margin-top: 20px;
+                }}
+                .totals-table {{
+                    width: 100%;
+                    border-collapse: collapse;
+                }}
+                .totals-table td {{
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #dee2e6;
+                }}
+                .totals-table .total-row {{
+                    background-color: #007bff;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 18px;
+                }}
+                .footer {{
+                    margin-top: 40px;
+                    padding-top: 20px;
+                    border-top: 1px solid #dee2e6;
+                    color: #6c757d;
+                    font-size: 14px;
+                }}
+                @media print {{
+                    body {{ background: white; padding: 0; }}
+                    .invoice-container {{ box-shadow: none; }}
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="invoice-container">
+                <div class="header">
+                    <div class="company-info">
+                        <h1>{self.company_name}</h1>
+                        <p>{self.company_address}</p>
+                        <p>Email: info@transportation.com | Phone: (555) 123-4567</p>
+                    </div>
+                    <div class="invoice-title">
+                        <h2>INVOICE</h2>
+                        <p><span class="status">{invoice.status.value.upper()}</span></p>
+                    </div>
+                </div>
+                
+                <div class="invoice-details">
+                    <div class="detail-section">
+                        <h3>Invoice Information</h3>
+                        <div class="detail-item">
+                            <span><strong>Invoice Number:</strong></span>
+                            <span>{invoice.invoice_number}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span><strong>Issue Date:</strong></span>
+                            <span>{invoice.created_at.strftime('%B %d, %Y')}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span><strong>Due Date:</strong></span>
+                            <span>{invoice.due_date.strftime('%B %d, %Y') if invoice.due_date else 'N/A'}</span>
+                        </div>
+                        {f'''<div class="detail-item">
+                            <span><strong>Paid Date:</strong></span>
+                            <span>{invoice.paid_date.strftime('%B %d, %Y')}</span>
+                        </div>''' if invoice.paid_date else ''}
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3>Billing Information</h3>
+                        <div class="detail-item">
+                            <span><strong>User ID:</strong></span>
+                            <span>{invoice.user_id}</span>
+                        </div>
+                        {f'''<div class="detail-item">
+                            <span><strong>Booking ID:</strong></span>
+                            <span>{invoice.booking_id}</span>
+                        </div>''' if invoice.booking_id else ''}
+                        {f'''<div class="detail-item">
+                            <span><strong>Order ID:</strong></span>
+                            <span>{invoice.order_id}</span>
+                        </div>''' if invoice.order_id else ''}
+                        <div class="detail-item">
+                            <span><strong>Currency:</strong></span>
+                            <span>{invoice.currency}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: right;">Unit Price</th>
+                            <th style="text-align: right;">Tax Rate</th>
+                            <th style="text-align: right;">Tax Amount</th>
+                            <th style="text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {items_html}
+                    </tbody>
+                </table>
+                
+                <div class="totals">
+                    <table class="totals-table">
+                        <tr>
+                            <td><strong>Subtotal:</strong></td>
+                            <td style="text-align: right;">${invoice.subtotal:.2f}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tax Amount:</strong></td>
+                            <td style="text-align: right;">${invoice.tax_amount:.2f}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Discount:</strong></td>
+                            <td style="text-align: right;">-${invoice.discount_amount:.2f}</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>TOTAL AMOUNT:</strong></td>
+                            <td style="text-align: right;"><strong>${invoice.total_amount:.2f}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+                
+                {f'<div style="margin-top: 30px;"><h3>Notes:</h3><p style="background-color: #f8f9fa; padding: 15px; border-radius: 4px;">{invoice.notes}</p></div>' if invoice.notes else ''}
+                
+                <div class="footer">
+                    <p><strong>Thank you for your business!</strong></p>
+                    <p>This invoice was generated automatically on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}.</p>
+                    <p>For questions regarding this invoice, please contact our billing department.</p>
+                </div>
             </div>
-            
-            {f'<p><strong>Notes:</strong> {invoice.notes}</p>' if invoice.notes else ''}
         </body>
         </html>
         """
@@ -248,6 +548,12 @@ class PaymentEnhancedService:
         return self.db.query(Payment).filter(
             Payment.user_id == user_id
         ).order_by(desc(Payment.created_at)).offset(skip).limit(limit).all()
+    
+    def get_booking_payments(self, booking_id: int) -> List[Payment]:
+        """Get all payments for a specific booking"""
+        return self.db.query(Payment).filter(
+            Payment.booking_id == booking_id
+        ).order_by(desc(Payment.created_at)).all()
     
     def update_payment(self, payment_id: int, payment_update: PaymentUpdate) -> Payment:
         """Update payment details"""

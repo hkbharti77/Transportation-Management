@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 from app.models.user import UserRole
@@ -9,6 +9,12 @@ class UserBase(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     role: UserRole = UserRole.PUBLIC_USER
+
+    @field_validator('role', mode='before')
+    def convert_role_to_lowercase(cls, v):
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
 # Create User Schema
 class UserCreate(UserBase):

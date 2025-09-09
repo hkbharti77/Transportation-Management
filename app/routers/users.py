@@ -14,7 +14,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("/", response_model=List[UserSchema])
 def get_users(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=1000),
     role: Optional[UserRole] = None,
     is_active: Optional[bool] = None,
     current_user: User = Depends(require_admin),
@@ -101,7 +101,7 @@ def change_password(
 @router.get("/drivers", response_model=List[UserSchema])
 def get_drivers(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=1000),
     is_active: Optional[bool] = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -134,7 +134,7 @@ def get_drivers(
 @router.get("/customers", response_model=List[UserSchema])
 def get_customers(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
@@ -161,7 +161,7 @@ def get_customers(
 @router.get("/transporters", response_model=List[UserSchema])
 def get_transporters(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(100, ge=1, le=1000),
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db)
 ):
