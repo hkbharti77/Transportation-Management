@@ -27,6 +27,14 @@ def create_dispatch(
     dispatch_service = DispatchService(db)
     return dispatch_service.create_dispatch(dispatch_data)
 
+@router.get("/available-drivers")
+def get_available_drivers(
+    db: Session = Depends(get_db)
+):
+    """Get list of available drivers for assignment"""
+    dispatch_service = DispatchService(db)
+    return dispatch_service.get_available_drivers()
+
 @router.get("/{dispatch_id}", response_model=DispatchResponse)
 def get_dispatch(
     dispatch_id: int,
@@ -137,11 +145,3 @@ def get_dispatches_by_status(
     """Get dispatches by specific status"""
     dispatch_service = DispatchService(db)
     return dispatch_service.get_all_dispatches(skip=skip, limit=limit, status=status)
-
-@router.get("/available-drivers")
-def get_available_drivers(
-    db: Session = Depends(get_db)
-):
-    """Get list of available drivers for assignment"""
-    dispatch_service = DispatchService(db)
-    return dispatch_service.get_available_drivers()
