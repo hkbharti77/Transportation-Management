@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { fleetService, Fleet } from "@/services/fleetService";
+import { fleetService, Fleet, Truck } from "@/services/fleetService";
 import { driverService, Driver } from "@/services/driverService";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
@@ -36,15 +36,15 @@ export default function FleetsPage() {
   
   // Driver assignment modal state
   const [driverAssignmentModalOpen, setDriverAssignmentModalOpen] = useState(false);
-  const [selectedTruckForAssignment, setSelectedTruckForAssignment] = useState<any>(null);
+  const [selectedTruckForAssignment, setSelectedTruckForAssignment] = useState<Truck | null>(null);
   
   // Truck location modal state
   const [locationModalOpen, setLocationModalOpen] = useState(false);
-  const [selectedTruckForLocation, setSelectedTruckForLocation] = useState<any>(null);
+  const [selectedTruckForLocation, setSelectedTruckForLocation] = useState<Truck | null>(null);
   
   // Truck location history modal state
   const [locationHistoryModalOpen, setLocationHistoryModalOpen] = useState(false);
-  const [selectedTruckForHistory, setSelectedTruckForHistory] = useState<any>(null);
+  const [selectedTruckForHistory, setSelectedTruckForHistory] = useState<Truck | null>(null);
   
   // Pagination and filtering state
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,7 +72,7 @@ export default function FleetsPage() {
     }
     fetchFleets();
     fetchDrivers();
-  }, [currentPage, pageSize, filters, currentDriverPage, driverPageSize, driverFilters]);
+  }, [currentPage, pageSize, filters, currentDriverPage, driverPageSize, driverFilters, router]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -218,7 +218,7 @@ export default function FleetsPage() {
     setViewingFleet(null);
   };
 
-  const handleAssignDriver = (truck: any) => {
+  const handleAssignDriver = (truck: Truck) => {
     setSelectedTruckForAssignment(truck);
     setDriverAssignmentModalOpen(true);
   };
@@ -235,7 +235,7 @@ export default function FleetsPage() {
     setSelectedTruckForAssignment(null);
   };
 
-  const handleUpdateLocation = (truck: any) => {
+  const handleUpdateLocation = (truck: Truck) => {
     setSelectedTruckForLocation(truck);
     setLocationModalOpen(true);
   };
@@ -252,7 +252,7 @@ export default function FleetsPage() {
     setSelectedTruckForLocation(null);
   };
 
-  const handleViewLocationHistory = (truck: any) => {
+  const handleViewLocationHistory = (truck: Truck) => {
     setSelectedTruckForHistory(truck);
     setLocationHistoryModalOpen(true);
   };

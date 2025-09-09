@@ -234,7 +234,7 @@ export default function CompletedOrdersPage() {
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Customer Feedback</p>
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border-l-4 border-green-500">
-                      <p className="text-green-800 dark:text-green-200 italic">"{order.feedback}"</p>
+                      <p className="text-green-800 dark:text-green-200 italic">&quot;{order.feedback}&quot;</p>
                     </div>
                   </div>
                 )}

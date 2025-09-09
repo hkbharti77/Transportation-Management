@@ -12,6 +12,7 @@ interface User {
   phone: string;
   role: "admin" | "staff" | "customer" | "public_service_manager";
   is_active: boolean;
+  password?: string; // Optional password for creation
 }
 
 interface UserFormProps {
@@ -20,6 +21,7 @@ interface UserFormProps {
   onCancel: () => void;
   isLoading?: boolean;
   mode: "create" | "edit";
+  serverErrors?: Record<string, string>;
 }
 
 const roleOptions = [
@@ -35,6 +37,7 @@ export default function UserForm({
   onCancel,
   isLoading = false,
   mode,
+  serverErrors = {},
 }: UserFormProps) {
   const [formData, setFormData] = useState<User>({
     name: "",
@@ -42,6 +45,7 @@ export default function UserForm({
     phone: "",
     role: "customer",
     is_active: true,
+    password: "", // Add password field for creation
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { isOpen, openModal, closeModal } = useModal();
@@ -58,6 +62,13 @@ export default function UserForm({
       });
     }
   }, [user, mode]);
+
+  // Handle server-side errors
+  useEffect(() => {
+    if (Object.keys(serverErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...serverErrors }));
+    }
+  }, [serverErrors]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -80,7 +91,18 @@ export default function UserForm({
       newErrors.role = "Role is required";
     }
 
-    setErrors(newErrors);
+    // Validate password for new users
+    if (mode === "create") {
+      if (!formData.password || formData.password.trim() === "") {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+    }
+
+    // Merge client-side validation errors with server-side errors
+    const combinedErrors = { ...newErrors, ...serverErrors };
+    setErrors(combinedErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -145,6 +167,18 @@ export default function UserForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* General Error Display */}
+        {errors.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <span className="text-sm font-medium">{errors.general}</span>
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Name Field */}
           <div className="lg:col-span-2">
@@ -210,6 +244,23 @@ export default function UserForm({
               <p className="mt-1 text-xs text-error-500">{errors.role}</p>
             )}
           </div>
+
+          {/* Password Field - Only for new users */}
+          {mode === "create" && (
+            <div className="lg:col-span-2">
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter password (minimum 6 characters)"
+                defaultValue={formData.password}
+                onChange={handleInputChange}
+                error={!!errors.password}
+                hint={errors.password}
+              />
+            </div>
+          )}
 
           {/* Status Field */}
           <div className="lg:col-span-2">

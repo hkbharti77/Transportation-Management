@@ -244,7 +244,7 @@ export default function VehiclesPage() {
               Access Denied
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              You don't have permission to access vehicle information.
+              You don&apos;t have permission to access vehicle information.
             </p>
           </div>
         </ComponentCard>

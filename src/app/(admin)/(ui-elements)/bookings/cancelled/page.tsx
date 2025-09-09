@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
@@ -27,7 +27,6 @@ interface Booking {
 
 export default function CancelledBookingsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [totalBookings, setTotalBookings] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
@@ -87,26 +86,23 @@ export default function CancelledBookingsPage() {
     }
   ];
 
-  const loadCancelledBookings = async () => {
+  const loadCancelledBookings = useCallback(async () => {
     try {
-      setLoading(true);
       setTimeout(() => {
         setBookings(mockCancelledBookings);
         setTotalBookings(mockCancelledBookings.length);
         setTotalLoss(mockCancelledBookings.reduce((sum, booking) => sum + booking.fare, 0));
-        setLoading(false);
       }, 1000);
     } catch (error) {
       console.error('Error loading cancelled bookings:', error);
-      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCancelledBookings();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, loadCancelledBookings]);
 
   const handleProcessRefund = (bookingId: number) => {
     setBookings(prev => prev.map(booking => 

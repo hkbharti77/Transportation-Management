@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
@@ -25,9 +25,7 @@ interface Payment {
 
 export default function PaymentManagementPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [totalPayments, setTotalPayments] = useState(0);
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   // Mock payment data
@@ -114,9 +112,8 @@ export default function PaymentManagementPage() {
     }
   ];
 
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     try {
-      setLoading(true);
       setTimeout(() => {
         let filteredPayments = mockPayments;
         
@@ -125,20 +122,17 @@ export default function PaymentManagementPage() {
         }
         
         setPayments(filteredPayments);
-        setTotalPayments(filteredPayments.length);
-        setLoading(false);
       }, 1000);
     } catch (error) {
       console.error('Error loading payments:', error);
-      setLoading(false);
     }
-  };
+  }, [filterStatus]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadPayments();
     }
-  }, [isAuthenticated, user, filterStatus]);
+  }, [isAuthenticated, user, loadPayments]);
 
   const handleRetryPayment = (paymentId: number) => {
     setPayments(prev => prev.map(payment => 

@@ -12,7 +12,6 @@ import { orderService, OrderAnalytics } from '@/services/orderService';
 export default function OrderAnalyticsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState<OrderAnalytics | null>(null);
   const [dateRange, setDateRange] = useState('30'); // Last 30 days
 

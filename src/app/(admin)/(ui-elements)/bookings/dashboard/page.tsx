@@ -25,7 +25,6 @@ interface Booking {
 export default function BookingDashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
     confirmedBookings: 0,

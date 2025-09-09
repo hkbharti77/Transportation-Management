@@ -13,6 +13,7 @@ interface User {
   created_at?: string;
   updated_at?: string;
   avatar?: string;
+  password?: string; // Optional password for creation
 }
 
 interface ApiResponse<T> {
@@ -283,11 +284,26 @@ class UserService {
     return this.handleResponse<User>(response);
   }
 
+  // Check if email exists
+  async checkEmailExists(email: string): Promise<boolean> {
+    try {
+      const users = await this.getUsers({ search: email, limit: 1 });
+      return users.data.some(user => user.email.toLowerCase() === email.toLowerCase());
+    } catch (error) {
+      console.error('Error checking email existence:', error);
+      // Return false to allow submission attempt (better UX than blocking on error)
+      return false;
+    }
+  }
+
   // Create new user
   async createUser(userData: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
-    const response = await fetch(`${API_BASE_URL}/users/`, {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(userData),
     });
 

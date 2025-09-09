@@ -26,7 +26,6 @@ interface Booking {
 
 export default function ConfirmedBookingsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [totalBookings, setTotalBookings] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);

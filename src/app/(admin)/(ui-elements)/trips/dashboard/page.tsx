@@ -12,7 +12,6 @@ import { useRouter } from 'next/navigation';
 export default function TripDashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState({
     totalTrips: 0,
     activeTrips: 0,

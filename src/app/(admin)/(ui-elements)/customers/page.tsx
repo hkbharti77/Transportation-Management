@@ -35,11 +35,11 @@ export default function CustomersPage() {
   });
   const [apiError, setApiError] = useState(false);
   const [apiSuccess, setApiSuccess] = useState(false);
-  const [pagination, setPagination] = useState({
+  const pagination = {
     skip: 0,
     limit: 100,
     total: 0
-  });
+  };
 
   // Check authentication on component mount
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function CustomersPage() {
     setFilteredCustomers(filtered);
     setTotalPages(Math.ceil(filtered.length / pagination.limit));
     setCurrentPage(1); // Reset to first page when filters change
-  }, [customers, searchQuery, filters]);
+  }, [customers, searchQuery, filters, pagination.limit]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -157,45 +157,6 @@ export default function CustomersPage() {
     }
   };
 
-  const handleToggleStatus = async (customerId: number, isActive: boolean) => {
-    try {
-      await userService.toggleUserStatus(customerId, isActive);
-      setCustomers(prev => prev.map(customer => 
-        customer.id === customerId ? { ...customer, is_active: isActive } : customer
-      ));
-      setFilteredCustomers(prev => prev.map(customer => 
-        customer.id === customerId ? { ...customer, is_active: isActive } : customer
-      ));
-    } catch (error) {
-      console.error("Failed to toggle customer status:", error);
-      alert("Failed to update customer status. Please try again.");
-    }
-  };
-
-  const handleResetPassword = async (customerId: number) => {
-    try {
-      await userService.resetUserPassword(customerId);
-      alert("Password reset email sent to customer successfully!");
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      alert("Failed to reset password. Please try again.");
-    }
-  };
-
-  const handleRoleChange = async (customerId: number, role: string) => {
-    try {
-      await userService.changeUserRole(customerId, role);
-      setCustomers(prev => prev.map(customer => 
-        customer.id === customerId ? { ...customer, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : customer
-      ));
-      setFilteredCustomers(prev => prev.map(customer => 
-        customer.id === customerId ? { ...customer, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : customer
-      ));
-    } catch (error) {
-      console.error("Failed to change customer role:", error);
-      alert("Failed to update customer role. Please try again.");
-    }
-  };
 
   const handleViewProfile = (customer: User) => {
     router.push(`/customers/${customer.id}`);

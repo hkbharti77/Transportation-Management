@@ -8,15 +8,12 @@ import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
 import DriverStatsSummary from "@/components/ecommerce/DriverStatsSummary";
 import { 
-  BoxIcon,
   TaskIcon, 
   UserIcon,
   CalenderIcon,
-  TimeIcon,
   LocationIcon,
   TruckIcon,
-  AlertIcon,
-  CheckCircleIcon
+  AlertIcon
 } from "@/icons";
 
 // Mock data interfaces for driver home dashboard
@@ -189,8 +186,8 @@ export default function DriverHomePage() {
     },
     {
       id: 'schedule',
-      title: 'Today\'s Schedule',
-      description: 'View today\'s trips and tasks',
+      title: 'Today&apos;s Schedule',
+      description: 'View today&apos;s trips and tasks',
       icon: <CalenderIcon className="h-6 w-6" />,
       action: '/driver-dashboard#trips',
       color: 'orange'
