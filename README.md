@@ -195,6 +195,24 @@ DEBUG=False
 REDIS_URL=redis://localhost:6379
 ```
 
+### Cloud Deployment
+
+For deployment to cloud platforms like Render, Railway, Heroku, and others, see [CLOUD_DEPLOYMENT.md](CLOUD_DEPLOYMENT.md).
+
+### Staging Deployment
+
+For staging deployment instructions, see [STAGING_DEPLOYMENT.md](STAGING_DEPLOYMENT.md).
+
+To deploy to staging:
+
+```bash
+# Using Docker Compose
+docker-compose -f docker-compose.staging.yml up --build -d
+
+# Run database migrations
+docker-compose -f docker-compose.staging.yml exec app alembic upgrade head
+```
+
 ## 📊 Monitoring & Logging
 
 - **Request Logging**: All API requests are logged with timing

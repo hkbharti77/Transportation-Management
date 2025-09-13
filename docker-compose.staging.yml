@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://staging_user:complex_password@db:5432/transportation_staging
+      - ASYNC_DATABASE_URL=postgresql+asyncpg://staging_user:complex_password@db:5432/transportation_staging
+      - SECRET_KEY=staging-32-byte-secret-key-here-123456
+      - REDIS_URL=redis://redis:6379
+      - DEBUG=False
+      - PROJECT_NAME=Transportation Management System - Staging
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=transportation_staging
+      - POSTGRES_USER=staging_user
+      - POSTGRES_PASSWORD=complex_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_staging_data:/data
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
