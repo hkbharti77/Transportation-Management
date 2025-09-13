@@ -116,8 +116,14 @@ def get_all_tickets(
 ):
     """Get all tickets with optional filters"""
     service = PublicServiceService(db)
-    # This would need to be implemented in the service layer for complex filtering
-    return service.get_service_tickets(service_id) if service_id else []
+    return service.get_all_tickets(
+        skip=skip, 
+        limit=limit, 
+        service_id=service_id, 
+        booking_status=booking_status, 
+        user_id=user_id, 
+        travel_date=travel_date
+    )
 
 @router.put("/tickets/{ticket_id}", response_model=TicketResponse)
 def update_ticket(
@@ -193,16 +199,15 @@ def get_service_statistics(
     return ServiceStatistics(**stats)
 
 # Service management endpoints
-@router.put("/{service_id}/status")
+@router.put("/{service_id}/status", response_model=PublicServiceResponse)
 def update_service_status(
     service_id: int,
-    new_status: ServiceStatus,
+    status_update: PublicServiceUpdate,
     db: Session = Depends(get_db)
 ):
     """Update service status"""
     service = PublicServiceService(db)
-    update_data = PublicServiceUpdate(status=new_status)
-    return service.update_service(service_id, update_data)
+    return service.update_service(service_id, status_update)
 
 @router.get("/{service_id}/tickets", response_model=List[TicketResponse])
 def get_service_tickets(

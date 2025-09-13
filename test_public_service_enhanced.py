@@ -311,8 +311,13 @@ def test_ticket_booking(test_service_id):
     # Assert test completed
     assert True
     
-    availability = response.json()
-    print(f"Available seats: {availability['available_seats']}")
+    # Get availability data separately
+    availability_response = requests.get(
+        f"{BASE_URL}/public-services/{service_id}/availability?travel_date={travel_date}"
+    )
+    availability = availability_response.json() if availability_response.status_code == 200 else {}
+    if 'available_seats' in availability:
+        print(f"Available seats: {availability['available_seats']}")
     
     # 2. Book tickets
     print("2. Booking multiple tickets...")

@@ -598,7 +598,7 @@ class PaymentEnhancedService:
             currency="USD",
             payment_method=payment.method,
             customer_email=user.email if user else "customer@example.com",
-            customer_name=user.full_name if user else "Customer",
+            customer_name=user.name if user else "Customer",
             description=f"Payment for transaction {payment.transaction_id}",
             reference_id=payment.transaction_id
         )

@@ -6,7 +6,7 @@ from app.models.public_service import PublicService, Ticket, ServiceSchedule, Se
 from app.models.vehicle import Vehicle, VehicleStatus
 from app.schemas.public_service import (
     PublicServiceCreate, PublicServiceUpdate, TicketCreate, TicketUpdate,
-    TicketBookingRequest, ServiceAvailability, ServiceTimetable
+    TicketBookingRequest, ServiceAvailability, ServiceTimetable, Stop, TimeSlot
 )
 from fastapi import HTTPException, status
 import json
@@ -70,10 +70,22 @@ class PublicServiceService:
         update_data = service_update.dict(exclude_unset=True)
         
         # Handle JSON fields
-        if 'stops' in update_data:
-            update_data['stops'] = json.dumps([stop.dict() for stop in update_data['stops']])
-        if 'schedule' in update_data:
-            update_data['schedule'] = json.dumps([slot.dict() for slot in update_data['schedule']])
+        if 'stops' in update_data and update_data['stops'] is not None:
+            # Convert stops to JSON string for storage
+            if isinstance(update_data['stops'][0], dict):
+                # Already dictionaries, just serialize to JSON
+                update_data['stops'] = json.dumps(update_data['stops'])
+            else:
+                # Pydantic models, convert to dict then serialize
+                update_data['stops'] = json.dumps([stop.dict() for stop in update_data['stops']])
+        if 'schedule' in update_data and update_data['schedule'] is not None:
+            # Convert schedule to JSON string for storage
+            if isinstance(update_data['schedule'][0], dict):
+                # Already dictionaries, just serialize to JSON
+                update_data['schedule'] = json.dumps(update_data['schedule'])
+            else:
+                # Pydantic models, convert to dict then serialize
+                update_data['schedule'] = json.dumps([slot.dict() for slot in update_data['schedule']])
         
         for field, value in update_data.items():
             setattr(service, field, value)
@@ -162,6 +174,26 @@ class PublicServiceService:
         if travel_date:
             query = query.filter(func.date(Ticket.travel_date) == travel_date)
         return query.all()
+    
+    def get_all_tickets(self, skip: int = 0, limit: int = 100, 
+                       service_id: Optional[int] = None,
+                       booking_status: Optional[TicketStatus] = None,
+                       user_id: Optional[int] = None,
+                       travel_date: Optional[date] = None) -> List[Ticket]:
+        """Get all tickets with optional filters"""
+        query = self.db.query(Ticket)
+        
+        # Apply filters
+        if service_id is not None:
+            query = query.filter(Ticket.service_id == service_id)
+        if booking_status is not None:
+            query = query.filter(Ticket.booking_status == booking_status)
+        if user_id is not None:
+            query = query.filter(Ticket.user_id == user_id)
+        if travel_date is not None:
+            query = query.filter(func.date(Ticket.travel_date) == travel_date)
+            
+        return query.offset(skip).limit(limit).all()
     
     def update_ticket(self, ticket_id: int, ticket_update: TicketUpdate) -> Ticket:
         """Update ticket details"""
@@ -273,11 +305,12 @@ class PublicServiceService:
         
         # Assign seat
         assigned_seat = booking_request.preferred_seat
-        if not assigned_seat or assigned_seat not in [seat["seat_number"] for seat in availability.seat_details if seat["status"] == TicketStatus.AVAILABLE]:
+        seat_numbers = [seat.seat_number for seat in availability.seat_details if seat.status == TicketStatus.AVAILABLE]
+        if not assigned_seat or assigned_seat not in seat_numbers:
             # Find first available seat
             for seat in availability.seat_details:
-                if seat["status"] == TicketStatus.AVAILABLE:
-                    assigned_seat = seat["seat_number"]
+                if seat.status == TicketStatus.AVAILABLE:
+                    assigned_seat = seat.seat_number
                     break
         
         # Create ticket
@@ -286,7 +319,7 @@ class PublicServiceService:
             passenger_name=booking_request.passenger_name,
             seat_number=assigned_seat,
             travel_date=booking_request.travel_date,
-            fare_paid=service.fare,
+            fare_paid=float(service.fare),
             user_id=booking_request.user_id
         )
         
@@ -308,7 +341,12 @@ class PublicServiceService:
                 detail="Service not found"
             )
         
-        schedule_data = json.loads(service.schedule)
+        # Parse schedule data
+        if isinstance(service.schedule, str):
+            schedule_data = json.loads(service.schedule)
+        else:
+            schedule_data = service.schedule
+            
         timetable = []
         
         for slot in schedule_data:

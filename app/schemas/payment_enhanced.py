@@ -166,7 +166,6 @@ class RefundResponse(BaseModel):
 
 # Payment processing schemas
 class PaymentProcessRequest(BaseModel):
-    payment_id: int = Field(..., description="Payment ID to process")
     gateway_data: Optional[Dict[str, Any]] = Field(None, description="Gateway specific data")
 
 class PaymentProcessResponse(BaseModel):

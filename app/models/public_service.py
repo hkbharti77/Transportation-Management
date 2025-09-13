@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 import enum
 from typing import List, Dict, Any
+import json
 
 class ServiceStatus(str, enum.Enum):
     ACTIVE = "active"

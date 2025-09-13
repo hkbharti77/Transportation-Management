@@ -146,7 +146,6 @@ def test_payment_gateway_integration(test_payment_id):
     # 1. Process payment through gateway
     print("1. Processing payment through gateway...")
     process_data = {
-        "payment_id": payment_id,
         "gateway_data": {
             "card_number": "4111111111111111",
             "expiry": "12/25",
@@ -488,7 +487,6 @@ def test_error_handling():
     # 2. Try to process non-existent payment
     print("2. Processing non-existent payment...")
     process_data = {
-        "payment_id": 99999,
         "gateway_data": {}
     }
     response = requests.post(

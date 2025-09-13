@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime, time, date
+import json
 from app.models.public_service import ServiceStatus, TicketStatus
 
 # Stop and Schedule schemas
@@ -41,6 +42,36 @@ class PublicServiceResponse(PublicServiceBase):
     status: ServiceStatus
     created_at: datetime
     updated_at: Optional[datetime] = None
+    
+    @model_validator(mode='before')
+    @classmethod
+    def parse_json_fields(cls, values):
+        """Parse JSON string fields to Python objects"""
+        if hasattr(values, '__dict__'):
+            # It's a SQLAlchemy model instance
+            values = values.__dict__
+            
+        if isinstance(values, dict):
+            # Handle stops field
+            if 'stops' in values:
+                if isinstance(values['stops'], str):
+                    try:
+                        values['stops'] = json.loads(values['stops'])
+                    except (json.JSONDecodeError, TypeError):
+                        values['stops'] = []
+                elif values['stops'] is None:
+                    values['stops'] = []
+            
+            # Handle schedule field
+            if 'schedule' in values:
+                if isinstance(values['schedule'], str):
+                    try:
+                        values['schedule'] = json.loads(values['schedule'])
+                    except (json.JSONDecodeError, TypeError):
+                        values['schedule'] = []
+                elif values['schedule'] is None:
+                    values['schedule'] = []
+        return values
     
     class Config:
         from_attributes = True

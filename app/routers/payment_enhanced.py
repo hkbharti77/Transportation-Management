@@ -18,7 +18,7 @@ from app.models.payment import PaymentMethod, PaymentStatus, InvoiceStatus
 
 router = APIRouter(prefix="/payments", tags=["payments-enhanced"])
 
-# Payment CRUD endpoints
+# Payment CRUD endpoints - specific routes first
 @router.post("/", response_model=PaymentResponse, status_code=status.HTTP_201_CREATED)
 def create_payment(
     payment_data: PaymentCreate,
@@ -34,21 +34,6 @@ def create_payment(
     """
     service = PaymentEnhancedService(db)
     return service.create_payment(payment_data)
-
-@router.get("/{payment_id}", response_model=PaymentResponse)
-def get_payment(
-    payment_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get payment details by ID"""
-    service = PaymentEnhancedService(db)
-    payment = service.get_payment(payment_id)
-    if not payment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Payment not found"
-        )
-    return payment
 
 @router.get("/user/{user_id}", response_model=List[PaymentResponse])
 def get_user_payments(
@@ -70,35 +55,7 @@ def get_booking_payments(
     service = PaymentEnhancedService(db)
     return service.get_booking_payments(booking_id)
 
-@router.put("/{payment_id}", response_model=PaymentResponse)
-def update_payment(
-    payment_id: int,
-    payment_update: PaymentUpdate,
-    db: Session = Depends(get_db)
-):
-    """Update payment details"""
-    service = PaymentEnhancedService(db)
-    return service.update_payment(payment_id, payment_update)
-
 # Payment gateway integration endpoints
-@router.post("/{payment_id}/process", response_model=PaymentProcessResponse)
-def process_payment(
-    payment_id: int,
-    process_request: PaymentProcessRequest,
-    db: Session = Depends(get_db)
-):
-    """
-    Process payment through payment gateway.
-    
-    The system will:
-    - Validate payment exists and is in pending status
-    - Create gateway request with user details
-    - Process through payment gateway
-    - Update payment status based on gateway response
-    """
-    service = PaymentEnhancedService(db)
-    return service.process_payment(payment_id, process_request.gateway_data)
-
 @router.post("/webhook")
 def process_webhook(
     webhook_data: Dict[str, Any],
@@ -148,21 +105,6 @@ def create_invoice(
     service = PaymentEnhancedService(db)
     return service.create_invoice(invoice_data)
 
-@router.get("/invoices/{invoice_id}", response_model=InvoiceResponse)
-def get_invoice(
-    invoice_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get invoice details by ID"""
-    service = PaymentEnhancedService(db)
-    invoice = service.get_invoice(invoice_id)
-    if not invoice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Invoice not found"
-        )
-    return invoice
-
 @router.get("/invoices/user/{user_id}", response_model=List[InvoiceResponse])
 def get_user_invoices(
     user_id: int,
@@ -173,16 +115,6 @@ def get_user_invoices(
     """Get all invoices for a specific user"""
     service = PaymentEnhancedService(db)
     return service.get_user_invoices(user_id, skip=skip, limit=limit)
-
-@router.put("/invoices/{invoice_id}", response_model=InvoiceResponse)
-def update_invoice(
-    invoice_id: int,
-    invoice_update: InvoiceUpdate,
-    db: Session = Depends(get_db)
-):
-    """Update invoice details"""
-    service = PaymentEnhancedService(db)
-    return service.update_invoice(invoice_id, invoice_update)
 
 # Invoice generation endpoints
 @router.post("/invoices/generate", response_model=InvoiceGenerateResponse)
@@ -411,12 +343,72 @@ def export_invoices(
         # Return JSON format
         return {"data": invoices, "format": "json"}
 
-# Health check endpoint
-@router.get("/health")
-def payment_health_check():
-    """Health check for payment system"""
-    return {
-        "status": "healthy",
-        "service": "payment-enhanced",
-        "timestamp": "2024-12-25T00:00:00Z"
-    }
+# Parameterized routes should come last
+@router.get("/{payment_id}", response_model=PaymentResponse)
+def get_payment(
+    payment_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get payment details by ID"""
+    service = PaymentEnhancedService(db)
+    payment = service.get_payment(payment_id)
+    if not payment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Payment not found"
+        )
+    return payment
+
+@router.put("/{payment_id}", response_model=PaymentResponse)
+def update_payment(
+    payment_id: int,
+    payment_update: PaymentUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update payment details"""
+    service = PaymentEnhancedService(db)
+    return service.update_payment(payment_id, payment_update)
+
+# Payment gateway integration endpoints - this should also be last
+@router.post("/{payment_id}/process", response_model=PaymentProcessResponse)
+def process_payment(
+    payment_id: int,
+    process_request: PaymentProcessRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Process payment through payment gateway.
+    
+    The system will:
+    - Validate payment exists and is in pending status
+    - Create gateway request with user details
+    - Process through payment gateway
+    - Update payment status based on gateway response
+    """
+    service = PaymentEnhancedService(db)
+    return service.process_payment(payment_id, process_request.gateway_data)
+
+@router.get("/invoices/{invoice_id}", response_model=InvoiceResponse)
+def get_invoice(
+    invoice_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get invoice details by ID"""
+    service = PaymentEnhancedService(db)
+    invoice = service.get_invoice(invoice_id)
+    if not invoice:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Invoice not found"
+        )
+    return invoice
+
+@router.put("/invoices/{invoice_id}", response_model=InvoiceResponse)
+def update_invoice(
+    invoice_id: int,
+    invoice_update: InvoiceUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update invoice details"""
+    service = PaymentEnhancedService(db)
+    return service.update_invoice(invoice_id, invoice_update)
