@@ -262,13 +262,7 @@ After deploying to any platform:
    - Verify all required environment variables are set
    - Ensure the `SECRET_KEY` is properly configured
 
-3. **Import Errors ("Could not import module 'app.main'")**:
-   - This is a common issue with some cloud platforms that expect a different project structure
-   - Ensure your start command references the correct module: `uvicorn main:app`
-   - Check that your main.py file is in the root directory
-   - Some platforms may require you to specify the full path or working directory
-
-4. **Performance Issues**:
+3. **Performance Issues**:
    - Consider adding Redis for caching
    - Optimize database queries
    - Scale the application horizontally
