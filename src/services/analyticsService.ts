@@ -3,6 +3,7 @@
 
 import { orderService } from './orderService';
 import { fleetService } from './fleetService';
+import { adminService, ReportRequest, ReportResponse } from './adminService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -30,6 +31,41 @@ export interface OverallAnalytics {
     averageRating: number;
     totalReviews: number;
   };
+}
+
+// Admin Overview Interface
+export interface AdminOverview {
+  total_users: number;
+  active_users_today: number;
+  total_bookings: number;
+  bookings_today: number;
+  total_revenue: number;
+  revenue_today: number;
+  total_trucks: number;
+  active_trucks: number;
+  system_health: Array<{
+    service_name: string;
+    status: string;
+    response_time: number;
+    error_count: number;
+    details: Record<string, any>;
+    health_id: number;
+    last_check: string;
+    created_at: string;
+  }>;
+  recent_alerts: Array<{
+    alert_type: string;
+    title: string;
+    message: string;
+    severity: string;
+    metadata: Record<string, any>;
+    alert_id: number;
+    is_resolved: boolean;
+    resolved_at: string | null;
+    resolved_by: number | null;
+    created_at: string;
+    updated_at: string;
+  }>;
 }
 
 export interface BookingAnalytics {
@@ -589,6 +625,28 @@ class AnalyticsService {
         completed: 45
       }
     };
+  }
+
+  // Get admin overview data
+  async getAdminOverview(): Promise<AdminOverview> {
+    try {
+      const data = await adminService.getAdminOverview();
+      return data;
+    } catch (error) {
+      console.error('Error fetching admin overview:', error);
+      throw error;
+    }
+  }
+
+  // Generate admin report
+  async generateReport(request: ReportRequest): Promise<ReportResponse> {
+    try {
+      const data = await adminService.generateReport(request);
+      return data;
+    } catch (error) {
+      console.error('Error generating report:', error);
+      throw error;
+    }
   }
 
   // Check if backend is available

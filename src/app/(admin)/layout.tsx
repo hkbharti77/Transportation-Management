@@ -34,7 +34,7 @@ export default function AdminLayout({
       // If user is a driver and trying to access admin areas
       if (role === 'driver') {
         // Allow driver to access their dashboard and specific driver routes
-        if (pathname === '/driver-home' || pathname === '/driver-dashboard' || pathname === '/driver-profile' || pathname === '/vehicle-directory' || pathname.startsWith('/driver/') || pathname === '/profile') {
+        if (pathname === '/driver-home' || pathname === '/driver-dashboard' || pathname === '/driver-profile' || pathname === '/driver-vehicle' || pathname === '/vehicle-directory' || pathname === '/notifications' || pathname === '/driver-orders' || pathname.startsWith('/driver-trips/') || pathname.startsWith('/driver/') || pathname === '/profile') {
           return; // Allow access
         } else {
           router.push('/driver-home');

@@ -6,13 +6,10 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Badge from '@/components/ui/badge/Badge';
-import { bookingService, BookingAnalytics } from '@/services/bookingService';
-
-
 
 export default function BookingAnalyticsPage() {
   const { user, isAuthenticated } = useAuth();
-  const [analyticsData, setAnalyticsData] = useState<BookingAnalytics | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState('30'); // Last 30 days
@@ -21,18 +18,21 @@ export default function BookingAnalyticsPage() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Loading booking analytics data...');
       
-      // Calculate date range based on selection
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(dateRange));
+      // Fetch booking analytics data from the new endpoint
+      const response = await fetch('http://localhost:8000/api/v1/admin/analytics/bookings', {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      });
       
-      const data = await bookingService.getBookingAnalytics(
-        startDate.toISOString(),
-        endDate.toISOString()
-      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
+      const data = await response.json();
       setAnalyticsData(data);
     } catch (error) {
       console.error('Error loading booking analytics data:', error);
@@ -41,7 +41,7 @@ export default function BookingAnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
@@ -203,6 +203,16 @@ export default function BookingAnalyticsPage() {
     );
   }
 
+  // Calculate completion rate
+  const completionRate = analyticsData.total_bookings > 0 
+    ? Math.round((analyticsData.completed_bookings / analyticsData.total_bookings) * 100)
+    : 0;
+
+  // Calculate cancellation rate
+  const cancellationRate = analyticsData.total_bookings > 0 
+    ? Math.round((analyticsData.cancelled_bookings / analyticsData.total_bookings) * 100)
+    : 0;
+
   // Display analytics data when available
   return (
     <div className="space-y-6">
@@ -215,7 +225,7 @@ export default function BookingAnalyticsPage() {
             📊 Booking Analytics Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Analytics from {new Date(analyticsData.period.start_date).toLocaleDateString()} to {new Date(analyticsData.period.end_date).toLocaleDateString()}
+            Real-time analytics and insights for booking management
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -254,9 +264,9 @@ export default function BookingAnalyticsPage() {
             <div className="text-3xl mb-2">🎟️</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Bookings</p>
             <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {analyticsData.summary.total_bookings.toLocaleString()}
+              {analyticsData.total_bookings.toLocaleString()}
             </p>
-            <p className="text-xs text-gray-500 mt-1">All bookings in period</p>
+            <p className="text-xs text-gray-500 mt-1">All bookings</p>
           </div>
         </ComponentCard>
 
@@ -265,31 +275,31 @@ export default function BookingAnalyticsPage() {
             <div className="text-3xl mb-2">✅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {analyticsData.summary.completed_bookings.toLocaleString()}
+              {analyticsData.completed_bookings.toLocaleString()}
             </p>
             <p className="text-xs text-gray-500 mt-1">Successfully completed</p>
           </div>
         </ComponentCard>
 
-        <ComponentCard title="Total Revenue">
+        <ComponentCard title="Cancelled Bookings">
           <div className="p-4 text-center">
-            <div className="text-3xl mb-2">💰</div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              ₹{analyticsData.summary.total_revenue.toLocaleString()}
+            <div className="text-3xl mb-2">❌</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled</p>
+            <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {analyticsData.cancelled_bookings.toLocaleString()}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Total earnings</p>
+            <p className="text-xs text-gray-500 mt-1">Cancelled bookings</p>
           </div>
         </ComponentCard>
 
-        <ComponentCard title="Average Booking Value">
+        <ComponentCard title="Pending Bookings">
           <div className="p-4 text-center">
-            <div className="text-3xl mb-2">📈</div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Avg Booking Value</p>
-            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              ₹{analyticsData.summary.average_booking_value.toLocaleString()}
+            <div className="text-3xl mb-2">⏳</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
+            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              {analyticsData.pending_bookings.toLocaleString()}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Average per booking</p>
+            <p className="text-xs text-gray-500 mt-1">Awaiting action</p>
           </div>
         </ComponentCard>
 
@@ -298,7 +308,7 @@ export default function BookingAnalyticsPage() {
             <div className="text-3xl mb-2">🎯</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
             <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-              {analyticsData.summary.completion_rate}%
+              {completionRate}%
             </p>
             <p className="text-xs text-gray-500 mt-1">Success rate</p>
           </div>
@@ -307,40 +317,31 @@ export default function BookingAnalyticsPage() {
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
-        <ComponentCard title="Bookings by Status">
+        {/* Booking Trends */}
+        <ComponentCard title="Booking Trends (Last 7 Days)">
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.by_status.map((item) => {
-                const percentage = analyticsData.summary.total_bookings > 0 
-                  ? Math.round((item.count / analyticsData.summary.total_bookings) * 100)
-                  : 0;
-                
-                const colors = {
-                  pending: 'bg-yellow-500',
-                  confirmed: 'bg-green-500',
-                  in_progress: 'bg-blue-500',
-                  completed: 'bg-purple-500',
-                  cancelled: 'bg-red-500'
-                };
-                
-                const color = colors[item.status as keyof typeof colors] || 'bg-gray-500';
+              {analyticsData.booking_trends.map((trend: any, index: number) => {
+                const maxCount = Math.max(...analyticsData.booking_trends.map((t: any) => t.count));
+                const percentage = maxCount > 0 ? (trend.count / maxCount) * 100 : 0;
                 
                 return (
-                  <div key={item.status} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full ${color}`}></div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                        {item.status.replace('_', ' ')}
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 w-32">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {new Date(trend.date).toLocaleDateString('en-US', { weekday: 'short' })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {item.count}
-                      </span>
-                      <Badge size="sm" color="light">
-                        {percentage}%
-                      </Badge>
+                    <div className="flex-1 mx-4">
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-gray-900 dark:text-white">{trend.count} bookings</span>
+                      </div>
+                      <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
                 );
@@ -349,35 +350,34 @@ export default function BookingAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        {/* Service Type Distribution */}
-        <ComponentCard title="Bookings by Service Type">
+        {/* Booking by Status */}
+        <ComponentCard title="Bookings by Status">
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.by_service_type.map((item) => {
-                const percentage = analyticsData.summary.total_bookings > 0 
-                  ? Math.round((item.count / analyticsData.summary.total_bookings) * 100)
-                  : 0;
+              {Object.entries(analyticsData.booking_by_status).map(([status, count]) => {
+                const total = analyticsData.total_bookings;
+                const countValue = count as number;
+                const percentage = total > 0 ? Math.round((countValue / total) * 100) : 0;
                 
-                
-                const icons = {
-                  cargo: '🚛',
-                  passenger: '👥',
-                  public: '🚌'
+                const colors = {
+                  completed: 'bg-green-500',
+                  cancelled: 'bg-red-500',
+                  pending: 'bg-yellow-500'
                 };
                 
-                const icon = icons[item.service_type as keyof typeof icons] || '🚐';
+                const color = colors[status as keyof typeof colors] || 'bg-gray-500';
                 
                 return (
-                  <div key={item.service_type} className="flex items-center justify-between">
+                  <div key={status} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl">{icon}</div>
+                      <div className={`w-4 h-4 rounded-full ${color}`}></div>
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                        {item.service_type}
+                        {status.replace('_', ' ')}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        {item.count}
+                        {countValue}
                       </span>
                       <Badge size="sm" color="light">
                         {percentage}%
@@ -390,6 +390,75 @@ export default function BookingAnalyticsPage() {
           </div>
         </ComponentCard>
       </div>
+
+      {/* Revenue Trends */}
+      <ComponentCard title="Revenue Trends (Last 7 Days)">
+        <div className="p-6">
+          <div className="space-y-4">
+            {analyticsData.revenue_by_period.map((revenue: any, index: number) => {
+              const maxRevenue = Math.max(...analyticsData.revenue_by_period.map((r: any) => r.revenue));
+              const percentage = maxRevenue > 0 ? (revenue.revenue / maxRevenue) * 100 : 0;
+              
+              return (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 w-32">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {new Date(revenue.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                    </span>
+                  </div>
+                  <div className="flex-1 mx-4">
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-gray-900 dark:text-white">₹{revenue.revenue.toLocaleString()}</span>
+                    </div>
+                    <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-teal-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </ComponentCard>
+
+      {/* Top Routes */}
+      {analyticsData.top_routes && analyticsData.top_routes.length > 0 && (
+        <ComponentCard title="Top Routes">
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400">Rank</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400">Route</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-500 dark:text-gray-400">Bookings</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {analyticsData.top_routes.map((route: any, index: number) => (
+                    <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
+                      <td className="py-3 px-4">
+                        <Badge 
+                          variant="light" 
+                          color={index === 0 ? "warning" : index === 1 ? "light" : "info"}
+                          size="sm"
+                        >
+                          #{index + 1}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{route.route}</td>
+                      <td className="py-3 px-4 text-gray-900 dark:text-white">{route.count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ComponentCard>
+      )}
 
       {/* Additional Insights */}
       <ComponentCard title="Key Insights">
@@ -399,23 +468,23 @@ export default function BookingAnalyticsPage() {
               <div className="text-2xl mb-2">📊</div>
               <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Performance</h3>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                {analyticsData.summary.completion_rate}% of bookings are successfully completed
+                {completionRate}% of bookings are successfully completed
+              </p>
+            </div>
+            
+            <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <div className="text-2xl mb-2">❌</div>
+              <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">Cancellations</h3>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                {cancellationRate}% of bookings are cancelled
               </p>
             </div>
             
             <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="text-2xl mb-2">💵</div>
-              <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">Revenue</h3>
-              <p className="text-sm text-green-700 dark:text-green-300">
-                Average booking value is ₹{analyticsData.summary.average_booking_value.toLocaleString()}
-              </p>
-            </div>
-            
-            <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
               <div className="text-2xl mb-2">🎯</div>
-              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Activity</h3>
-              <p className="text-sm text-purple-700 dark:text-purple-300">
-                {analyticsData.summary.total_bookings} total bookings in selected period
+              <h3 className="font-semibold text-green-900 dark:text-green-100 mb-2">Activity</h3>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                {analyticsData.total_bookings} total bookings
               </p>
             </div>
           </div>

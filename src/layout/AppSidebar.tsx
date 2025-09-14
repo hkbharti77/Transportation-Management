@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
 import {
   ChevronDownIcon,
   GridIcon,
@@ -34,13 +35,17 @@ const adminSidebar: NavItem[] = [
     subItems: [
       { name: "Overview", path: "/admin/overview", pro: false },
       { name: "Analytics", path: "/analytics", pro: false },
-      { name: "System Health", path: "/admin/health", pro: false },
+      { name: "Reports", path: "/admin/reports", pro: false },
+      { name: "System Health", path: "/admin/system/health", pro: false, new: true },
+      { name: "System Metrics", path: "/admin/system/metrics", pro: false, new: true }
     ],
   },
   {
     icon: <UserCircleIcon />,
     name: "User Management",
     subItems: [
+      { name: "Driver Analytics", path: "/drivers/analytics", pro: false, new: true },
+      { name: "User Analytics", path: "/users/analytics", pro: false, new: true },
       { name: "All Users", path: "/users", pro: false },
       { name: "Customers", path: "/customers", pro: false },
       { name: "Drivers", path: "/drivers", pro: false },
@@ -60,6 +65,8 @@ const adminSidebar: NavItem[] = [
     icon: <BoxIcon />,
     name: "Fleet Management",
     subItems: [
+      { name: "Maintenance Analytics", path: "/maintenance/analytics", pro: false, new: true },
+     { name: "Fleet Analytics", path: "/fleet-management/analytics", pro: false },
       { name: "Fleets", path: "/fleets", pro: false },
       { name: "Trucks", path: "/trucks", pro: false },
       { name: "Vehicles", path: "/vehicles", pro: false },
@@ -109,7 +116,7 @@ const adminSidebar: NavItem[] = [
       { name: "Confirmed Bookings", path: "/bookings/confirmed", pro: false },
       { name: "Cancelled Bookings", path: "/bookings/cancelled", pro: false },
       { name: "Booking Analytics", path: "/bookings/analytics", pro: false },
-      { name: "Revenue Analytics", path: "/bookings/revenue", pro: false, new: true },
+      { name: "Revenue Analytics", path: "/revenue", pro: false, new: true },
       { name: "Peak Hours Analytics", path: "/bookings/peak-hours", pro: false, new: true },
       { name: "Public Services", path: "/public-services", pro: false },
       { name: "Tickets", path: "/tickets", pro: false },
@@ -256,18 +263,17 @@ const driverSidebar: NavItem[] = [
     name: "Work",
     subItems: [
       { name: "My Dashboard", path: "/driver-dashboard", pro: false },
-      { name: "Assigned Orders", path: "/driver-dashboard#orders", pro: false },
-      { name: "Active Trips", path: "/driver-dashboard#trips", pro: false },
-      { name: "Trip History", path: "/driver-dashboard#history", pro: false },
+      { name: "Assigned Orders", path: "/driver-orders", pro: false },
+      { name: "Active Trips", path: "/driver-trips/active", pro: false },
+      { name: "Trip History", path: "/driver-trips/history", pro: false },
     ],
   },
   {
     icon: <BoxIcon />,
     name: "Fleet",
     subItems: [
-      { name: "My Vehicle", path: "/driver-dashboard#vehicle", pro: false },
+      { name: "My Vehicle", path: "/driver-vehicle", pro: false },
       { name: "Vehicle Directory", path: "/vehicle-directory", pro: false },
-      { name: "Vehicle Status", path: "/vehicle-status", pro: false },
       { name: "Maintenance", path: "/maintenance", pro: false },
     ],
   },
@@ -277,23 +283,32 @@ const driverSidebar: NavItem[] = [
     subItems: [
       { name: "My Profile", path: "/driver-profile", pro: false },
       { name: "Notifications", path: "/notifications", pro: false },
-      { name: "Settings", path: "/settings", pro: false },
     ],
   },
 ];
 
-
+import { UserRole, getRoutesForRole } from "@/utils/roleBasedRouting";
 
 // Helper function to determine user role based on pathname
-const getUserRole = (pathname: string): "admin" | "customer" | "driver" => {
+const getUserRole = (pathname: string, userRole?: string): UserRole => {
+  // If we have user role from auth context, use it
+  if (userRole) {
+    return userRole.toLowerCase() as UserRole;
+  }
+  
+  // Otherwise, determine from pathname
   if (pathname.startsWith("/admin")) return "admin";
   if (pathname.startsWith("/driver") || pathname === "/driver-dashboard" || pathname === "/driver-home") return "driver";
   if (pathname.startsWith("/customer") || pathname === "/dashboard") return "customer";
-  return "admin"; // Default to admin instead of "default"
+  if (pathname.startsWith("/dispatcher")) return "dispatcher";
+  if (pathname.startsWith("/public-services")) return "public_service_manager";
+  return "admin"; // Default to admin
 };
 
 // Helper function to get sidebar items based on role
-const getSidebarItems = (role: "admin" | "customer" | "driver"): NavItem[] => {
+const getSidebarItems = (role: UserRole): NavItem[] => {
+  // For now, we'll keep the existing sidebar structures but in the future
+  // we could dynamically generate them from the roleBasedRoutes configuration
   switch (role) {
     case "admin":
       return adminSidebar;
@@ -301,15 +316,26 @@ const getSidebarItems = (role: "admin" | "customer" | "driver"): NavItem[] => {
       return customerSidebar;
     case "driver":
       return driverSidebar;
+    case "dispatcher":
+      // For dispatcher, we can use a modified version of admin sidebar
+      // or create a specific dispatcher sidebar
+      return adminSidebar;
+    case "public_service_manager":
+      // For public service manager, we can use a modified version of admin sidebar
+      // or create a specific public service manager sidebar
+      return adminSidebar;
+    default:
+      return adminSidebar;
   }
 };
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const { user } = useAuth();
   
   // Determine user role and get appropriate sidebar items
-  const userRole = getUserRole(pathname);
+  const userRole = getUserRole(pathname, user?.role);
   const navItems = getSidebarItems(userRole);
 
   const renderMenuItems = (
