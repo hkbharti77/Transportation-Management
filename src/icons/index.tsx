@@ -57,6 +57,15 @@ import ClockIcon from "./clock.svg";
 import TruckIcon from "./truck.svg";
 import UserSolidIcon from "./user.svg";
 import WrenchIcon from "./wrench.svg";
+import SpeedIcon from "./speed.svg";
+import CompassIcon from "./compass.svg";
+import RefreshIcon from "./refresh.svg";
+import PlayIcon from "./play.svg";
+import PauseIcon from "./pause.svg";
+import StopIcon from "./stop.svg";
+import MapIcon from "./map.svg";
+import HistoryIcon from "./history.svg";
+import StatsIcon from "./stats.svg";
 
 export {
   DownloadIcon,
@@ -118,6 +127,15 @@ export {
   TruckIcon,
   UserSolidIcon,
   WrenchIcon,
+  SpeedIcon,
+  CompassIcon,
+  RefreshIcon,
+  PlayIcon,
+  PauseIcon,
+  StopIcon,
+  MapIcon,
+  HistoryIcon,
+  StatsIcon,
   // Icon aliases for vehicle management components
   PencilIcon as EditIcon,
   TrashBinIcon as TrashIcon,

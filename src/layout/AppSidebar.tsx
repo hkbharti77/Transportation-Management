@@ -15,6 +15,7 @@ import {
   TaskIcon,
   ArrowRightIcon,
   DollarLineIcon,
+  LocationIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -82,6 +83,19 @@ const adminSidebar: NavItem[] = [
       { name: "Order Analytics", path: "/orders/analytics", pro: false },
       { name: "Popular Routes", path: "/orders/routes", pro: false },
       { name: "Order Tracking", path: "/orders/tracking", pro: false },
+    ],
+  },
+  {
+    icon: <LocationIcon />,
+    name: "Tracking & Location",
+    subItems: [
+      { name: "Tracking Dashboard", path: "/tracking/dashboard", pro: false },
+      { name: "Location Tracking", path: "/tracking/location", pro: false },
+      { name: "ETA Calculator", path: "/tracking/eta", pro: false },
+      { name: "Geofences", path: "/tracking/geofences", pro: false },
+      { name: "ETA Tests", path: "/tracking/eta/test", pro: false },
+      { name: "Order Tracking", path: "/orders/tracking", pro: false },
+      { name: "Fleet Tracking", path: "/fleet-tracking", pro: false },
     ],
   },
   {
