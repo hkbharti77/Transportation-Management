@@ -131,8 +131,13 @@ export default function PartsPage() {
       setParts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       setSuccess("Stock updated successfully");
       setTimeout(() => setAdjustOpen(false), 600);
-    } catch (e: any) {
-      setError(e?.message || "Failed to update stock");
+    } catch (e: unknown) {
+      // Properly handle the error with type checking
+      if (e instanceof Error) {
+        setError(e.message || "Failed to update stock");
+      } else {
+        setError("Failed to update stock");
+      }
     } finally {
       setAdjustSubmitting(false);
     }
@@ -154,8 +159,13 @@ export default function PartsPage() {
       setSuccess(`Part created (ID: ${res.id})`);
       // Close shortly after success
       setTimeout(() => setIsCreateOpen(false), 900);
-    } catch (e: any) {
-      setError(e?.message || "Failed to create part");
+    } catch (e: unknown) {
+      // Properly handle the error with type checking
+      if (e instanceof Error) {
+        setError(e.message || "Failed to create part");
+      } else {
+        setError("Failed to create part");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -482,8 +492,13 @@ export default function PartsPage() {
                   setParts(refreshed);
                 } catch {}
                 setTimeout(() => setAddOpen(false), 900);
-              } catch (e: any) {
-                setError(e?.message || "Failed to add parts to service");
+              } catch (e: unknown) {
+                // Properly handle the error with type checking
+                if (e instanceof Error) {
+                  setError(e.message || "Failed to add parts to service");
+                } else {
+                  setError("Failed to add parts to service");
+                }
               } finally {
                 setAddSubmitting(false);
               }

@@ -247,7 +247,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.000001}
                 placeholder="e.g., 28.6139"
                 value={locationData.latitude}
                 onChange={(e) => handleInputChange('latitude', e.target.value)}
@@ -260,7 +260,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.000001}
                 placeholder="e.g., 77.2090"
                 value={locationData.longitude}
                 onChange={(e) => handleInputChange('longitude', e.target.value)}
@@ -276,7 +276,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.1}
                 placeholder="e.g., 216"
                 value={locationData.altitude}
                 onChange={(e) => handleInputChange('altitude', e.target.value)}
@@ -289,7 +289,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.1}
                 placeholder="e.g., 45"
                 value={locationData.speed_kmh}
                 onChange={(e) => handleInputChange('speed_kmh', e.target.value)}
@@ -302,7 +302,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.1}
                 placeholder="e.g., 90"
                 value={locationData.heading_degrees}
                 onChange={(e) => handleInputChange('heading_degrees', e.target.value)}
@@ -318,7 +318,7 @@ export default function TruckLocationModal({
               </label>
               <Input
                 type="number"
-                step="any"
+                step={0.1}
                 placeholder="e.g., 5"
                 value={locationData.accuracy_meters}
                 onChange={(e) => handleInputChange('accuracy_meters', e.target.value)}

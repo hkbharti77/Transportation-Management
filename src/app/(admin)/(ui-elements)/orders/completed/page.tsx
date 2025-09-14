@@ -129,7 +129,7 @@ export default function CompletedOrdersPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Completed">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">✅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Completed</p>
@@ -137,7 +137,7 @@ export default function CompletedOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Revenue">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -145,7 +145,7 @@ export default function CompletedOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Average Rating">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">⭐</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
@@ -153,7 +153,7 @@ export default function CompletedOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Avg Revenue/Order">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📊</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Avg Revenue/Order</p>
@@ -171,7 +171,7 @@ export default function CompletedOrdersPage() {
             </div>
           </ComponentCard>
         ) : orders.length === 0 ? (
-          <ComponentCard>
+          <ComponentCard title="No Completed Orders">
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">✅</div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Completed Orders</h3>
@@ -180,7 +180,7 @@ export default function CompletedOrdersPage() {
           </ComponentCard>
         ) : (
           orders.map((order) => (
-            <ComponentCard key={order.id}>
+            <ComponentCard key={order.id} title={`Completed Order #${order.id}`}>
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export default function CompletedOrdersPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                    <Badge variant="light" color="success">
                       ✅ COMPLETED
                     </Badge>
                     {order.rating && (

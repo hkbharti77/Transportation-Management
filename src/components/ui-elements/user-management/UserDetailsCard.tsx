@@ -3,6 +3,7 @@ import Badge from "../../ui/badge/Badge";
 import Button from "../../ui/button/Button";
 import Image from "next/image";
 import { Modal } from "../../ui/modal";
+import { useRouter } from "next/navigation";
 import { type User } from "../../../services/userService";
 
 interface UserDetailsCardProps {
@@ -14,7 +15,6 @@ interface UserDetailsCardProps {
   onRoleChange: (role: string) => void;
   isLoading?: boolean;
   isAdmin?: boolean;
-  isOwnProfile?: boolean;
 }
 
 export default function UserDetailsCard({
@@ -26,8 +26,8 @@ export default function UserDetailsCard({
   onRoleChange,
   isLoading = false,
   isAdmin = false,
-  isOwnProfile = false,
 }: UserDetailsCardProps) {
+  const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [showRoleModal, setShowRoleModal] = React.useState(false);
   const [selectedRole, setSelectedRole] = React.useState(user.role);
@@ -198,6 +198,13 @@ export default function UserDetailsCard({
 
             <Button
               variant="outline"
+              onClick={() => router.push(`/users/${user.id}/payments`)}
+            >
+              View Payments
+            </Button>
+
+            <Button
+              variant="outline"
               onClick={() => setShowDeleteModal(true)}
               disabled={isLoading}
               className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400"
@@ -288,7 +295,7 @@ export default function UserDetailsCard({
           </div>
 
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Changing the role will affect the user's permissions and access levels in the system.
+            Changing the role will affect the user&apos;s permissions and access levels in the system.
           </p>
 
           <div className="flex justify-end gap-3">

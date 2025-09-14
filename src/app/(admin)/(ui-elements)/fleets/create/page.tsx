@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fleetService, CreateFleetRequest } from "@/services/fleetService";
+import { fleetService } from "@/services/fleetService";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 

@@ -41,7 +41,7 @@ export default function ServiceStatusModal({
   onClose,
   service,
   onServiceUpdated,
-  userRole = "admin",
+  // userRole, // userRole is unused
 }: ServiceStatusModalProps) {
   const [current, setCurrent] = useState<ServiceRecord | null>(service);
   const [status, setStatus] = useState<string>(service?.status || "scheduled");
@@ -62,7 +62,7 @@ export default function ServiceStatusModal({
         setStatus(fresh.status || "scheduled");
         setDuration(fresh.actual_duration != null ? String(fresh.actual_duration) : "");
         setNotes(fresh.notes || "");
-      } catch (e) {
+      } catch {
         // keep existing values on failure
       }
     };

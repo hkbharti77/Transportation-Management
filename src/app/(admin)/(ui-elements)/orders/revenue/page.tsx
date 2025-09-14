@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
@@ -40,7 +40,7 @@ export default function RevenueAnalyticsPage() {
     };
   };
 
-  const loadRevenueData = async () => {
+  const loadRevenueData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -56,13 +56,13 @@ export default function RevenueAnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getDateRange]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadRevenueData();
     }
-  }, [isAuthenticated, user, dateRange]);
+  }, [isAuthenticated, user, dateRange, loadRevenueData]);
 
   const handleRefresh = () => {
     loadRevenueData();
@@ -139,7 +139,7 @@ export default function RevenueAnalyticsPage() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Revenue">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -147,7 +147,7 @@ export default function RevenueAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Analysis Period">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Analysis Period</p>
@@ -157,7 +157,7 @@ export default function RevenueAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Data Points">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📊</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Data Points</p>

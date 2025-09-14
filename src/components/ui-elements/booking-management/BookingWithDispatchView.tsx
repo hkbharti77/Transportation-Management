@@ -261,42 +261,48 @@ export default function BookingWithDispatchView({
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Dispatch ID:</span>
-                        <span className="font-medium text-purple-600">#{bookingWithDispatch.dispatch.dispatch_id}</span>
+                        <span className="font-medium text-purple-600">
+                          {bookingWithDispatch.dispatch ? `#${bookingWithDispatch.dispatch.dispatch_id}` : 'Not assigned'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                        <Badge size="sm" color={getStatusBadgeColor(bookingWithDispatch.dispatch.status)}>
-                          {bookingWithDispatch.dispatch.status}
-                        </Badge>
+                        {bookingWithDispatch.dispatch ? (
+                          <Badge size="sm" color={getStatusBadgeColor(bookingWithDispatch.dispatch.status)}>
+                            {bookingWithDispatch.dispatch.status}
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-500">Not assigned</span>
+                        )}
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Assigned Driver:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {bookingWithDispatch.dispatch.assigned_driver ? `#${bookingWithDispatch.dispatch.assigned_driver}` : 'Not assigned'}
+                          {bookingWithDispatch.dispatch?.assigned_driver ? `#${bookingWithDispatch.dispatch.assigned_driver}` : 'Not assigned'}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Dispatch Time:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDateTime(bookingWithDispatch.dispatch.dispatch_time)}
+                          {bookingWithDispatch.dispatch ? formatDateTime(bookingWithDispatch.dispatch.dispatch_time) : 'Not set'}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Arrival Time:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDateTime(bookingWithDispatch.dispatch.arrival_time)}
+                          {bookingWithDispatch.dispatch ? formatDateTime(bookingWithDispatch.dispatch.arrival_time) : 'Not set'}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Dispatch Created:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDateTime(bookingWithDispatch.dispatch.created_at)}
+                          {bookingWithDispatch.dispatch ? formatDateTime(bookingWithDispatch.dispatch.created_at) : 'Not set'}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600 dark:text-gray-400">Dispatch Updated:</span>
                         <span className="font-medium text-gray-900 dark:text-white">
-                          {formatDateTime(bookingWithDispatch.dispatch.updated_at)}
+                          {bookingWithDispatch.dispatch ? formatDateTime(bookingWithDispatch.dispatch.updated_at) : 'Not set'}
                         </span>
                       </div>
                     </div>

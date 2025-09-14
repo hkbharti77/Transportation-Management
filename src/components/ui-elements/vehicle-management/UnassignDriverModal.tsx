@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import { Vehicle } from "@/services/vehicleService";
-import { UserIcon, CloseIcon, AlertIcon } from "@/icons";
+import { UserIcon, AlertIcon } from "@/icons";
 
 interface UnassignDriverModalProps {
   isOpen: boolean;

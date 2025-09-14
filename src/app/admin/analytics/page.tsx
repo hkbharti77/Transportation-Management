@@ -94,7 +94,7 @@ export default function OverallAnalyticsPage() {
 
       {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Revenue">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -103,7 +103,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Bookings">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🎫</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Bookings</p>
@@ -112,7 +112,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Orders">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📦</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
@@ -121,7 +121,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Customer Rating">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">⭐</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Customer Rating</p>
@@ -133,7 +133,7 @@ export default function OverallAnalyticsPage() {
 
       {/* Fleet & Operations Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Active Fleets">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🚛</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Active Fleets</p>
@@ -142,7 +142,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Drivers">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">👥</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Drivers</p>
@@ -151,7 +151,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Customers">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🙋‍♂️</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Customers</p>
@@ -160,7 +160,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Avg Delivery Time">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">⏱️</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Avg Delivery Time</p>
@@ -237,7 +237,11 @@ export default function OverallAnalyticsPage() {
                 {analyticsData.topRoutes.map((route, index) => (
                   <tr key={route.route} className="border-b border-gray-100 dark:border-gray-800">
                     <td className="py-3 px-4">
-                      <Badge className={`${index === 0 ? 'bg-yellow-100 text-yellow-800' : index === 1 ? 'bg-gray-100 text-gray-800' : 'bg-orange-100 text-orange-800'} text-xs`}>
+                      <Badge 
+                        variant="light" 
+                        color={index === 0 ? "warning" : index === 1 ? "light" : "info"}
+                        size="sm"
+                      >
                         #{index + 1}
                       </Badge>
                     </td>
@@ -257,7 +261,7 @@ export default function OverallAnalyticsPage() {
 
       {/* Quick Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Booking Analytics">
           <div className="p-4 text-center">
             <div className="text-3xl mb-3">📊</div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Booking Analytics</h3>
@@ -271,7 +275,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Order Analytics">
           <div className="p-4 text-center">
             <div className="text-3xl mb-3">📈</div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Order Analytics</h3>
@@ -285,7 +289,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Trip Analytics">
           <div className="p-4 text-center">
             <div className="text-3xl mb-3">🚛</div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Trip Analytics</h3>
@@ -299,7 +303,7 @@ export default function OverallAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Route Analytics">
           <div className="p-4 text-center">
             <div className="text-3xl mb-3">🛣️</div>
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Route Analytics</h3>

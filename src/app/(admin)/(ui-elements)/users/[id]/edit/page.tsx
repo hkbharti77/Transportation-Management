@@ -83,7 +83,7 @@ export default function EditUserPage() {
           User not found
         </h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">
-          The user you're looking for doesn't exist or has been removed.
+          The user you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
         <button
           onClick={() => router.push("/users")}

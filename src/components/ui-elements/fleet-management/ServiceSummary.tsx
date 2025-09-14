@@ -71,7 +71,7 @@ export default function ServiceSummary() {
         <div className="flex items-center gap-2">
           <select
             value={range}
-            onChange={(e) => setRange(e.target.value as any)}
+            onChange={(e) => setRange(e.target.value as '7' | '30' | '90')}
             className="border border-gray-300 dark:border-white/10 rounded px-2 py-1 bg-white dark:bg-transparent"
           >
             <option value="7">Last 7 days</option>

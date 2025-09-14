@@ -147,7 +147,7 @@ export default function UserDetailsPage() {
           User not found
         </h3>
         <p className="text-gray-500 dark:text-gray-400 mb-4">
-          The user you're looking for doesn't exist or has been removed.
+          The user you&apos;re looking for doesn&apos;t exist or has been removed.
         </p>
         <button
           onClick={() => router.push("/users")}
@@ -199,7 +199,6 @@ export default function UserDetailsPage() {
         onRoleChange={handleRoleChange}
         isLoading={isActionLoading}
         isAdmin={currentUser?.role === 'admin'}
-        isOwnProfile={currentUser?.id === user.id}
       />
     </div>
   );

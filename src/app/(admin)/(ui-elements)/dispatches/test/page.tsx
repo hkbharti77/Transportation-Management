@@ -6,16 +6,17 @@ import ComponentCard from '@/components/common/ComponentCard';
 import Button from '@/components/ui/button/Button';
 
 export default function DispatchTestPage() {
-  const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [displayResults, setDisplayResults] = useState<string>('');
 
   const testGetDispatchByBooking = async () => {
     setLoading(true);
     try {
       const result = await dispatchService.getDispatchByBookingId(17);
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -25,9 +26,10 @@ export default function DispatchTestPage() {
     setLoading(true);
     try {
       const result = await dispatchService.getDispatchesByDriver(3);
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -37,9 +39,10 @@ export default function DispatchTestPage() {
     setLoading(true);
     try {
       const result = await dispatchService.assignDriver(3, 3);
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -52,9 +55,10 @@ export default function DispatchTestPage() {
         status: 'dispatched',
         dispatch_time: new Date().toISOString(),
       });
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -64,9 +68,10 @@ export default function DispatchTestPage() {
     setLoading(true);
     try {
       const result = await dispatchService.cancelDispatch(3);
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -76,9 +81,10 @@ export default function DispatchTestPage() {
     setLoading(true);
     try {
       const result = await dispatchService.getDispatchWithDetails(3);
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -88,9 +94,10 @@ export default function DispatchTestPage() {
     setLoading(true);
     try {
       const result = await dispatchService.getDispatchesByStatusDedicated('completed');
-      setResults(result);
+      setDisplayResults(JSON.stringify(result, null, 2));
     } catch (error) {
-      setResults({ error: error instanceof Error ? error.message : 'Unknown error' });
+      const errorResult = { error: error instanceof Error ? error.message : 'Unknown error' };
+      setDisplayResults(JSON.stringify(errorResult, null, 2));
     } finally {
       setLoading(false);
     }
@@ -128,9 +135,9 @@ export default function DispatchTestPage() {
           
           {loading && <p>Loading...</p>}
           
-          {results && (
+          {displayResults && (
             <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
-              {JSON.stringify(results, null, 2)}
+              {displayResults}
             </pre>
           )}
         </div>

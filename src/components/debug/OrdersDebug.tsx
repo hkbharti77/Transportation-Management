@@ -76,7 +76,7 @@ export default function OrdersDebug() {
       <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         <p><strong>Expected API URL:</strong> http://localhost:8000/api/v1/orders/</p>
         <p><strong>Frontend URL:</strong> http://localhost:3001</p>
-        <p><strong>Auth Token:</strong> Stored in localStorage as 'access_token'</p>
+        <p><strong>Auth Token:</strong> Stored in localStorage as &#39;access_token&#39;</p>
       </div>
     </div>
   );

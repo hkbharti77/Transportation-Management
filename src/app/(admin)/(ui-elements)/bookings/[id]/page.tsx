@@ -35,7 +35,7 @@ export default function BookingDetailsPage() {
         <div className="text-center py-12">
           <div className="text-red-500 text-lg mb-2">⚠️ Invalid Booking ID</div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The booking ID "{params?.id}" is not valid.
+            The booking ID &quot;{params?.id}&quot; is not valid.
           </p>
           <button
             onClick={() => router.back()}

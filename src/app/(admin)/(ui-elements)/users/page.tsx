@@ -159,46 +159,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleToggleStatus = async (userId: number, isActive: boolean) => {
-    try {
-      await userService.toggleUserStatus(userId, isActive);
-      setUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, is_active: isActive } : user
-      ));
-      setFilteredUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, is_active: isActive } : user
-      ));
-    } catch (error) {
-      console.error("Failed to toggle user status:", error);
-      alert("Failed to update user status. Please try again.");
-    }
-  };
-
-  const handleResetPassword = async (userId: number) => {
-    try {
-      await userService.resetUserPassword(userId);
-      alert("Password reset email sent to user successfully!");
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      alert("Failed to reset password. Please try again.");
-    }
-  };
-
-  const handleRoleChange = async (userId: number, role: string) => {
-    try {
-      await userService.changeUserRole(userId, role);
-      setUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : user
-      ));
-      setFilteredUsers(prev => prev.map(user => 
-        user.id === userId ? { ...user, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : user
-      ));
-    } catch (error) {
-      console.error("Failed to change user role:", error);
-      alert("Failed to update user role. Please try again.");
-    }
-  };
-
   // Get current page users
   const itemsPerPage = 10;
   const startIndex = (currentPage - 1) * itemsPerPage;

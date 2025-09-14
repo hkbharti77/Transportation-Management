@@ -60,7 +60,7 @@ export default function TruckForm({
         try {
           const defaultFleet = await fleetService.createFleet({
             name: "Default Fleet",
-            location: "Main Location"
+            description: "Auto-created default fleet"
           });
           setFleets([defaultFleet]);
           setFormData(prev => ({ ...prev, fleet_id: defaultFleet.id || 0 }));
@@ -78,7 +78,7 @@ export default function TruckForm({
     };
 
     fetchFleets();
-  }, []);
+  }, [formData.fleet_id]);
 
   useEffect(() => {
     if (truck && mode === "edit") {

@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
-import Badge from '@/components/ui/badge/Badge';
 import { orderService, OrderAnalytics } from '@/services/orderService';
 
 export default function OrderAnalyticsPage() {
@@ -14,36 +13,38 @@ export default function OrderAnalyticsPage() {
   const router = useRouter();
   const [analyticsData, setAnalyticsData] = useState<OrderAnalytics | null>(null);
   const [dateRange, setDateRange] = useState('30'); // Last 30 days
+  const [loading, setLoading] = useState(false);
 
-  const getDateRange = () => {
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    switch (dateRange) {
-      case '7':
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case '30':
-        startDate.setDate(startDate.getDate() - 30);
-        break;
-      case '90':
-        startDate.setDate(startDate.getDate() - 90);
-        break;
-      case '365':
-        startDate.setDate(startDate.getDate() - 365);
-        break;
-      default:
-        startDate.setDate(startDate.getDate() - 30);
-    }
-    
-    return {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString()
+  const loadAnalyticsData = useCallback(async () => {
+    const getDateRange = () => {
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (dateRange) {
+        case '7':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        case '90':
+          startDate.setDate(startDate.getDate() - 90);
+          break;
+        case '365':
+          startDate.setDate(startDate.getDate() - 365);
+          break;
+        default:
+          startDate.setDate(startDate.getDate() - 30);
+      }
+      
+      return {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      };
     };
-  };
 
-  const loadAnalyticsData = async () => {
     try {
+      // Explicitly reference the setLoading function to ensure proper scope
       setLoading(true);
       
       // Fetch real analytics data from the API
@@ -56,15 +57,16 @@ export default function OrderAnalyticsPage() {
       // Show error message to user
       alert('Failed to load analytics data. Please try again.');
     } finally {
+      // Explicitly reference the setLoading function to ensure proper scope
       setLoading(false);
     }
-  };
+  }, [dateRange]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadAnalyticsData();
     }
-  }, [isAuthenticated, user, dateRange]);
+  }, [isAuthenticated, user, dateRange, loadAnalyticsData]);
 
   const handleRefresh = () => {
     loadAnalyticsData();
@@ -122,12 +124,17 @@ export default function OrderAnalyticsPage() {
           </select>
           <Button
             onClick={handleRefresh}
+            disabled={loading}
             className="flex items-center gap-2 px-6 py-3 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-800/40 hover:border-green-500 dark:hover:border-green-500 hover:scale-105 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh Data
+            {loading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+            ) : (
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            )}
+            {loading ? 'Loading...' : 'Refresh Data'}
           </Button>
         </div>
       </div>

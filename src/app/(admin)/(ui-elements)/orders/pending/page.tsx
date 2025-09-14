@@ -39,7 +39,7 @@ export default function PendingOrdersPage() {
   const handleApproveOrder = async (orderId: number) => {
     try {
       // Call the API to approve the order
-      const approvedOrder = await orderService.approveOrder(orderId);
+      await orderService.approveOrder(orderId);
       
       // Update the UI to reflect the change
       setOrders(prev => prev.map(order => 
@@ -58,7 +58,7 @@ export default function PendingOrdersPage() {
   const handleRejectOrder = async (orderId: number) => {
     try {
       // Call the API to reject the order
-      const rejectedOrder = await orderService.rejectOrder(orderId);
+      await orderService.rejectOrder(orderId);
       
       // Update the UI to reflect the change
       setOrders(prev => prev.filter(order => order.id !== orderId));

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { userService, User, PaginatedResponse } from "@/services/userService";
+import { userService, User, PaginatedResponse, FilterOptions } from "@/services/userService";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
@@ -33,24 +33,25 @@ export default function PublicManagersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('');
 
-  useEffect(() => {
-    loadPublicManagers();
-  }, [currentPage, limit]);
-
-  const loadPublicManagers = async () => {
+  // Move the loadPublicManagers function declaration before useEffect
+  const loadPublicManagers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       // Get users with public_service_manager role
+      const filters: Omit<FilterOptions, "limit" | "page"> = {
+        role: 'public_service_manager'
+      };
+      
       const response: PaginatedResponse<User> = await userService.getUsersWithPagination(
         currentPage,
         limit,
-        'public_service_manager'
+        filters
       );
       
       setPublicManagers(response.data || []);
-      setTotalManagers(response.total || 0);
+      setTotalManagers(response.data?.length || 0);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load public service managers';
       setError(errorMessage);
@@ -58,20 +59,24 @@ export default function PublicManagersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit]);
+
+  useEffect(() => {
+    loadPublicManagers();
+  }, [currentPage, limit, loadPublicManagers]);
 
   const handleSearch = async () => {
     if (searchTerm.trim()) {
       try {
         setLoading(true);
-        const allManagers = await userService.getUsers(0, 1000, 'public_service_manager');
-        const filtered = allManagers.filter(manager => 
-          manager.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          manager.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          manager.phone.includes(searchTerm)
-        );
-        setPublicManagers(filtered);
-        setTotalManagers(filtered.length);
+        const filters: Omit<FilterOptions, "limit" | "page"> = {
+          role: 'public_service_manager',
+          search: searchTerm
+        };
+        
+        const response: PaginatedResponse<User> = await userService.getUsers(filters);
+        setPublicManagers(response.data || []);
+        setTotalManagers(response.data?.length || 0);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Search failed');
       } finally {
@@ -151,7 +156,7 @@ export default function PublicManagersPage() {
               <Input
                 type="text"
                 placeholder="Search by name, email, or phone..."
-                defaultValue={searchTerm}
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
               />
@@ -185,18 +190,18 @@ export default function PublicManagersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableCell className="font-medium">Name</TableCell>
-                  <TableCell className="font-medium">Email</TableCell>
-                  <TableCell className="font-medium">Phone</TableCell>
-                  <TableCell className="font-medium">Role</TableCell>
-                  <TableCell className="font-medium">Status</TableCell>
-                  <TableCell className="font-medium">Actions</TableCell>
+                  <TableCell isHeader className="font-medium">Name</TableCell>
+                  <TableCell isHeader className="font-medium">Email</TableCell>
+                  <TableCell isHeader className="font-medium">Phone</TableCell>
+                  <TableCell isHeader className="font-medium">Role</TableCell>
+                  <TableCell isHeader className="font-medium">Status</TableCell>
+                  <TableCell isHeader className="font-medium">Actions</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {publicManagers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell className="text-center py-8 text-gray-500" colSpan={6}>
                       No public service managers found
                     </TableCell>
                   </TableRow>

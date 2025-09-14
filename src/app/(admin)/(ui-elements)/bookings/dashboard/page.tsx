@@ -7,6 +7,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Badge from '@/components/ui/badge/Badge';
+import { bookingService } from '@/services/bookingService';
 
 interface Booking {
   id: number;
@@ -25,6 +26,7 @@ interface Booking {
 export default function BookingDashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const [, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
     confirmedBookings: 0,
@@ -36,112 +38,59 @@ export default function BookingDashboardPage() {
     recentBookings: [] as Booking[],
   });
 
-  // Mock bookings data
-  const mockBookings: Booking[] = [
-    {
-      id: 1,
-      trip_id: 101,
-      user_id: 201,
-      customer_name: "Alice Johnson",
-      seat_number: "A12",
-      status: 'confirmed',
-      booking_time: '2024-01-15T09:30:00Z',
-      trip_route: "Mumbai → Pune",
-      departure_time: '2024-01-16T08:00:00Z',
-      fare: 450.00,
-      payment_status: 'paid'
-    },
-    {
-      id: 2,
-      trip_id: 102,
-      user_id: 202,
-      customer_name: "Bob Smith",
-      seat_number: "B05",
-      status: 'pending',
-      booking_time: '2024-01-15T11:15:00Z',
-      trip_route: "Delhi → Gurgaon",
-      departure_time: '2024-01-16T14:30:00Z',
-      fare: 280.00,
-      payment_status: 'pending'
-    },
-    {
-      id: 3,
-      trip_id: 103,
-      user_id: 203,
-      customer_name: "Carol Williams",
-      seat_number: "C08",
-      status: 'confirmed',
-      booking_time: '2024-01-14T16:45:00Z',
-      trip_route: "Chennai → Bangalore",
-      departure_time: '2024-01-17T10:15:00Z',
-      fare: 650.00,
-      payment_status: 'paid'
-    },
-    {
-      id: 4,
-      trip_id: 104,
-      user_id: 204,
-      customer_name: "David Brown",
-      seat_number: "D03",
-      status: 'completed',
-      booking_time: '2024-01-13T14:20:00Z',
-      trip_route: "Kolkata → Howrah",
-      departure_time: '2024-01-14T12:00:00Z',
-      fare: 180.00,
-      payment_status: 'paid'
-    },
-    {
-      id: 5,
-      trip_id: 105,
-      user_id: 205,
-      customer_name: "Eva Davis",
-      seat_number: "E15",
-      status: 'cancelled',
-      booking_time: '2024-01-12T10:30:00Z',
-      trip_route: "Hyderabad → Secunderabad",
-      departure_time: '2024-01-15T18:45:00Z',
-      fare: 120.00,
-      payment_status: 'refunded'
-    }
-  ];
-
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
-      setTimeout(() => {
-        const totalBookings = mockBookings.length;
-        const confirmedBookings = mockBookings.filter(b => b.status === 'confirmed').length;
-        const pendingBookings = mockBookings.filter(b => b.status === 'pending').length;
-        const cancelledBookings = mockBookings.filter(b => b.status === 'cancelled').length;
-        const completedBookings = mockBookings.filter(b => b.status === 'completed').length;
-        
-        const totalRevenue = mockBookings
-          .filter(b => b.payment_status === 'paid')
-          .reduce((sum, b) => sum + b.fare, 0);
-        
-        const pendingPayments = mockBookings
-          .filter(b => b.payment_status === 'pending')
-          .reduce((sum, b) => sum + b.fare, 0);
-        
-        const recentBookings = mockBookings
-          .sort((a, b) => new Date(b.booking_time).getTime() - new Date(a.booking_time).getTime())
-          .slice(0, 10);
+      // Fetch all bookings from API instead of using mock data
+      const allBookingsResponse = await bookingService.getBookings({});
+      const allBookings = allBookingsResponse.data;
+      
+      const totalBookings = allBookings.length;
+      const confirmedBookings = allBookings.filter(b => b.booking_status === 'confirmed').length;
+      const pendingBookings = allBookings.filter(b => b.booking_status === 'pending').length;
+      const cancelledBookings = allBookings.filter(b => b.booking_status === 'cancelled').length;
+      const completedBookings = allBookings.filter(b => b.booking_status === 'completed').length;
+      
+      const totalRevenue = allBookings
+        .filter(b => b.booking_status === 'completed')
+        .reduce((sum, b) => sum + b.price, 0);
+      
+      const pendingPayments = allBookings
+        .filter(b => b.booking_status === 'pending')
+        .reduce((sum, b) => sum + b.price, 0);
+      
+      // Transform ServiceBooking to local Booking interface
+      const recentBookings: Booking[] = allBookings
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 10)
+        .map(booking => ({
+          id: booking.booking_id,
+          trip_id: 0, // Not available in bookingService Booking
+          user_id: booking.user_id,
+          customer_name: `Customer ${booking.user_id}`,
+          seat_number: 'N/A', // Not available in bookingService Booking
+          status: booking.booking_status as 'confirmed' | 'cancelled' | 'pending' | 'completed',
+          booking_time: booking.created_at,
+          trip_route: `${booking.source} → ${booking.destination}`,
+          departure_time: booking.created_at, // Using created_at as fallback
+          fare: booking.price,
+          payment_status: 'pending' as 'paid' | 'pending' | 'refunded', // Defaulting to pending
+        }));
 
-        setDashboardData({
-          totalBookings,
-          confirmedBookings,
-          pendingBookings,
-          cancelledBookings,
-          completedBookings,
-          totalRevenue,
-          pendingPayments,
-          recentBookings,
-        });
-        setLoading(false);
-      }, 1000);
+      setDashboardData({
+        totalBookings,
+        confirmedBookings,
+        pendingBookings,
+        cancelledBookings,
+        completedBookings,
+        totalRevenue,
+        pendingPayments,
+        recentBookings,
+      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -153,22 +102,22 @@ export default function BookingDashboardPage() {
   }, [isAuthenticated, user]);
 
   const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+    const statusMap: Record<string, { color: 'primary' | 'success' | 'error' | 'warning' | 'info' | 'light' | 'dark', text: string }> = {
+      pending: { color: 'warning', text: 'PENDING' },
+      confirmed: { color: 'primary', text: 'CONFIRMED' },
+      completed: { color: 'success', text: 'COMPLETED' },
+      cancelled: { color: 'error', text: 'CANCELLED' },
     };
-    return statusStyles[status as keyof typeof statusStyles] || statusStyles.pending;
+    return statusMap[status] || statusMap.pending;
   };
 
   const getPaymentBadge = (status: string) => {
-    const statusStyles = {
-      paid: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      pending: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
-      refunded: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+    const statusMap: Record<string, { color: 'primary' | 'success' | 'error' | 'warning' | 'info' | 'light' | 'dark', text: string }> = {
+      paid: { color: 'success', text: 'PAID' },
+      pending: { color: 'warning', text: 'PENDING' },
+      refunded: { color: 'info', text: 'REFUNDED' },
     };
-    return statusStyles[status as keyof typeof statusStyles] || statusStyles.pending;
+    return statusMap[status] || statusMap.pending;
   };
 
   if (isLoading) {
@@ -292,11 +241,11 @@ export default function BookingDashboardPage() {
                       </p>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <Badge className={getStatusBadge(booking.status)}>
-                        {booking.status.toUpperCase()}
+                      <Badge color={getStatusBadge(booking.status).color}>
+                        {getStatusBadge(booking.status).text}
                       </Badge>
-                      <Badge className={getPaymentBadge(booking.payment_status)}>
-                        {booking.payment_status.toUpperCase()}
+                      <Badge color={getPaymentBadge(booking.payment_status).color}>
+                        {getPaymentBadge(booking.payment_status).text}
                       </Badge>
                     </div>
                   </div>
@@ -349,14 +298,12 @@ export default function BookingDashboardPage() {
                 <Button
                   onClick={() => router.push('/bookings/cancelled')}
                   className="w-full justify-start text-left text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                  variant="ghost"
                 >
                   ❌ Cancelled Bookings
                 </Button>
                 <Button
                   onClick={() => router.push('/tickets')}
                   className="w-full justify-start text-left text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
-                  variant="ghost"
                 >
                   🎫 Ticket Management
                 </Button>
@@ -376,10 +323,10 @@ export default function BookingDashboardPage() {
                 <h3 className="font-semibold text-gray-900 dark:text-white">Paid Bookings</h3>
               </div>
               <p className="text-2xl font-bold text-green-600">
-                {mockBookings.filter(b => b.payment_status === 'paid').length}
+                {dashboardData.recentBookings.filter(b => b.payment_status === 'paid').length}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                ${mockBookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
+                ${dashboardData.recentBookings.filter(b => b.payment_status === 'paid').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
               </p>
             </div>
 
@@ -389,10 +336,10 @@ export default function BookingDashboardPage() {
                 <h3 className="font-semibold text-gray-900 dark:text-white">Pending Payments</h3>
               </div>
               <p className="text-2xl font-bold text-orange-600">
-                {mockBookings.filter(b => b.payment_status === 'pending').length}
+                {dashboardData.recentBookings.filter(b => b.payment_status === 'pending').length}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                ${mockBookings.filter(b => b.payment_status === 'pending').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
+                ${dashboardData.recentBookings.filter(b => b.payment_status === 'pending').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
               </p>
             </div>
 
@@ -402,10 +349,10 @@ export default function BookingDashboardPage() {
                 <h3 className="font-semibold text-gray-900 dark:text-white">Refunded</h3>
               </div>
               <p className="text-2xl font-bold text-purple-600">
-                {mockBookings.filter(b => b.payment_status === 'refunded').length}
+                {dashboardData.recentBookings.filter(b => b.payment_status === 'refunded').length}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                ${mockBookings.filter(b => b.payment_status === 'refunded').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
+                ${dashboardData.recentBookings.filter(b => b.payment_status === 'refunded').reduce((sum, b) => sum + b.fare, 0).toFixed(2)}
               </p>
             </div>
           </div>
@@ -436,8 +383,8 @@ export default function BookingDashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <Badge className={getStatusBadge(booking.status)}>
-                    {booking.status}
+                  <Badge color={getStatusBadge(booking.status).color}>
+                    {getStatusBadge(booking.status).text}
                   </Badge>
                 </div>
               ))}

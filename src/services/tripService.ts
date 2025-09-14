@@ -71,11 +71,7 @@ export interface PaginatedResponse<T> {
   total_pages?: number;
 }
 
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
+// Removed unused ApiResponse interface
 
 // Add the new interface for trip resources
 interface TripResources {
@@ -110,6 +106,13 @@ class TripService {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('current_user');
+        window.location.href = '/signin';
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
     }

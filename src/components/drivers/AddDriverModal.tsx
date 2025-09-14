@@ -6,11 +6,12 @@ import Button from '@/components/ui/button/Button';
 import Input from '@/components/form/input/InputField';
 import { userService } from '@/services/userService';
 import { UserIcon, EnvelopeIcon, PhoneIcon, LockIcon, CheckCircleIcon, AlertIcon } from '@/icons';
+import { type User } from '@/services/userService';
 
 interface AddDriverModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onDriverAdded: (driver: any) => void;
+  onDriverAdded: (driver: User) => void;
 }
 
 export default function AddDriverModal({ isOpen, onClose, onDriverAdded }: AddDriverModalProps) {

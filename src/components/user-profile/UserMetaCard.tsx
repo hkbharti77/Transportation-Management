@@ -13,11 +13,6 @@ interface UpdateProfileData {
   phone: string;
 }
 
-interface UpdateProfileData {
-  name: string;
-  phone: string;
-}
-
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
   const { userProfile, isLoading, fetchUserProfile } = useUserProfile();
@@ -75,7 +70,7 @@ export default function UserMetaCard() {
       });
 
       if (response.ok) {
-        const updatedData = await response.json();
+        await response.json(); // Just consume the response, don't assign to variable
         setUpdateSuccess('Profile updated successfully!');
         
         // Refresh profile data
@@ -90,7 +85,7 @@ export default function UserMetaCard() {
         const errorData = await response.json();
         setUpdateError(errorData.detail || 'Failed to update profile. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setUpdateError('Network error. Please check your connection and try again.');
     } finally {
       setIsUpdating(false);

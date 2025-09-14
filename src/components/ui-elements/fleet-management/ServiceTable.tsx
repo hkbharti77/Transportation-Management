@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Badge from "@/components/ui/badge/Badge";
 import { ServiceRecord } from "@/services/serviceService";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { serviceService } from "@/services/serviceService";
+// Removed unused serviceService import
 import ServiceStatusModal from "./ServiceStatusModal";
 import ServiceViewModal from "./ServiceViewModal";
 
@@ -14,9 +14,9 @@ interface ServiceTableProps {
   onDelete?: (id: number) => void;
 }
 
-const ServiceTable: React.FC<ServiceTableProps> = ({ services, onEdit, onDelete }) => {
+const ServiceTable: React.FC<ServiceTableProps> = ({ services }) => { // onEdit and onDelete are unused
   const [serviceList, setServiceList] = useState<ServiceRecord[]>(services);
-  const [loadingId, setLoadingId] = useState<number | null>(null);
+  // const [_loadingId, setLoadingId] = useState<number | null>(null); // Unused state
   const [activeService, setActiveService] = useState<ServiceRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewId, setViewId] = useState<number | null>(null);
@@ -61,7 +61,7 @@ const ServiceTable: React.FC<ServiceTableProps> = ({ services, onEdit, onDelete 
     setServiceList((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
   };
 
-  const allStatuses = ["scheduled", "in_progress", "completed", "cancelled"] as const;
+  // const _allStatuses = ["scheduled", "in_progress", "completed", "cancelled"] as const; // Unused variable
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">

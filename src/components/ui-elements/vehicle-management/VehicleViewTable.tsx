@@ -11,14 +11,12 @@ interface VehicleViewTableProps {
   vehicles: Vehicle[];
   onView: (vehicle: Vehicle) => void;
   isLoading: boolean;
-  userRole?: string;
 }
 
 export default function VehicleViewTable({
   vehicles,
   onView,
-  isLoading,
-  userRole
+  isLoading
 }: VehicleViewTableProps) {
   const getStatusColor = (status: string): "success" | "warning" | "error" | "info" => {
     switch (status) {
@@ -181,7 +179,6 @@ export default function VehicleViewTable({
                     size="sm"
                     onClick={() => onView(vehicle)}
                     className="!p-2 !min-w-[36px] !min-h-[36px]"
-                    title="View vehicle details"
                   >
                     <EyeIcon className="h-4 w-4 flex-shrink-0" />
                   </Button>

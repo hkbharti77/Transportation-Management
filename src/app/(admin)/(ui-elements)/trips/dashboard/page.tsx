@@ -10,8 +10,9 @@ import Badge from '@/components/ui/badge/Badge';
 import { useRouter } from 'next/navigation';
 
 export default function TripDashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     totalTrips: 0,
     activeTrips: 0,
@@ -23,7 +24,7 @@ export default function TripDashboardPage() {
 
   const loadDashboardData = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const allTrips = await tripService.getAllTrips({ page: 1, limit: 100 });
       
       const totalTrips = allTrips.data.length;
@@ -47,7 +48,7 @@ export default function TripDashboardPage() {
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -57,17 +58,17 @@ export default function TripDashboardPage() {
     }
   }, [isAuthenticated, user]);
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      scheduled: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      in_progress: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+  const getStatusBadgeColor = (status: string): "info" | "success" | "warning" | "error" => {
+    const statusStyles: Record<string, "info" | "success" | "warning" | "error"> = {
+      scheduled: 'info',
+      in_progress: 'success',
+      completed: 'success',
+      cancelled: 'error',
     };
-    return statusStyles[status as keyof typeof statusStyles] || statusStyles.scheduled;
+    return statusStyles[status] || 'info';
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-500"></div>
@@ -96,7 +97,7 @@ export default function TripDashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Trips">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🚌</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Trips</p>
@@ -104,7 +105,7 @@ export default function TripDashboardPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Active Now">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🟢</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Active Now</p>
@@ -112,7 +113,7 @@ export default function TripDashboardPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Scheduled">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Scheduled</p>
@@ -120,7 +121,7 @@ export default function TripDashboardPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Completed">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">✅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
@@ -128,7 +129,7 @@ export default function TripDashboardPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Cancelled">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">❌</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled</p>
@@ -189,8 +190,8 @@ export default function TripDashboardPage() {
                     <p className="font-medium text-gray-900 dark:text-white">Trip #{trip.id}</p>
                     <p className="text-sm text-gray-500">Route: {trip.route_id}</p>
                   </div>
-                  <Badge className={getStatusBadge(trip.status)}>
-                    {trip.status.replace('_', ' ').toUpperCase()}
+                  <Badge variant="light" color={getStatusBadgeColor(trip.status || 'scheduled')}>
+                    {(trip.status || 'scheduled').replace('_', ' ').toUpperCase()}
                   </Badge>
                 </div>
               ))

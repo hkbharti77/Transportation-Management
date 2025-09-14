@@ -46,7 +46,7 @@ export default function BookingStatusManagement({ defaultStatus }: BookingStatus
 
   useEffect(() => {
     loadBookingsByStatus(selectedStatus);
-  }, [selectedStatus, skip, limit, refreshTrigger]);
+  }, [selectedStatus, skip, limit, refreshTrigger, loadBookingsByStatus]);
 
   const handleStatusChange = (status: string) => {
     setSelectedStatus(status as Booking['booking_status']);
@@ -224,7 +224,7 @@ export default function BookingStatusManagement({ defaultStatus }: BookingStatus
                 No {selectedStatus} Bookings Found
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                There are no bookings with status "{selectedStatus}".
+                There are no bookings with status &quot;{selectedStatus}&quot;.
               </p>
             </div>
           ) : (

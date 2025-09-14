@@ -1,11 +1,8 @@
 // Comprehensive Analytics Service
 // This service aggregates analytics data from multiple backend services
 
-import { orderService, OrderAnalytics, OrderStats, OrderRevenue } from './orderService';
-import { userService } from './userService';
+import { orderService } from './orderService';
 import { fleetService } from './fleetService';
-import { tripService } from './tripService';
-import { routeService } from './routeService';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -127,7 +124,13 @@ export interface PartsInventoryAnalytics {
     count: number;
     total_stock: number;
   }>;
-  low_stock_alerts: Array<any>;
+  low_stock_alerts: Array<{
+    part_id: number;
+    part_name: string;
+    current_stock: number;
+    minimum_stock: number;
+    category: string;
+  }>;
 }
 
 export interface MaintenanceScheduleAnalytics {
@@ -142,7 +145,15 @@ export interface MaintenanceScheduleAnalytics {
     estimated_duration: number;
     cost: number;
   }>>;
-  maintenance_schedules: Array<any>;
+  maintenance_schedules: Array<{
+    schedule_id: number;
+    vehicle_id: number;
+    service_type: string;
+    scheduled_date: string;
+    priority: string;
+    estimated_duration: number;
+    cost: number;
+  }>;
 }
 
 export interface ServiceCostAnalytics {
@@ -164,9 +175,12 @@ export interface ServiceCostAnalytics {
 class AnalyticsService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No access token found. Please log in again.');
+    }
     return {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
+      'Authorization': `Bearer ${token}`,
     };
   }
 
@@ -175,6 +189,7 @@ class AnalyticsService {
       if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('access_token');
         localStorage.removeItem('current_user');
+        window.location.href = '/signin';
         throw new Error('Authentication failed. Please log in again.');
       }
       
@@ -424,7 +439,7 @@ class AnalyticsService {
         count: route.order_count,
         revenue: route.total_revenue
       }));
-    } catch (error) {
+    } catch {
       return [
         { route: "Mumbai → Pune", count: 187, revenue: 98750.00 },
         { route: "Delhi → Gurgaon", count: 156, revenue: 78900.00 },
@@ -584,7 +599,7 @@ class AnalyticsService {
         headers: this.getAuthHeaders(),
       });
       return response.ok;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

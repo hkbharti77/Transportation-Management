@@ -15,7 +15,7 @@ import Button from "@/components/ui/button/Button";
 import TruckSearchFilter from "@/components/ui-elements/fleet-management/TruckSearchFilter";
 import Pagination from "@/components/tables/Pagination";
 import ComponentCard from "@/components/common/ComponentCard";
-import { PlusIcon } from "@/icons";
+
 
 interface FilterOptions {
   truck_type: string;
@@ -40,10 +40,8 @@ export default function TrucksPage() {
   });
   const [apiError, setApiError] = useState(false);
   const [apiSuccess, setApiSuccess] = useState(false);
-  const [pagination, setPagination] = useState({
-    skip: 0,
-    limit: 10,
-    total: 0
+  const [pagination] = useState({
+    limit: 10
   });
 
   // Check authentication on component mount
@@ -82,7 +80,6 @@ export default function TrucksPage() {
     const fetchTrucks = async () => {
       setIsLoading(true);
       try {
-        const skip = (currentPage - 1) * pagination.limit;
         const response = await fleetService.getTrucks({
           ...filters
         });
@@ -145,7 +142,7 @@ export default function TrucksPage() {
     setFilteredTrucks(filtered);
     setTotalPages(Math.ceil(filtered.length / pagination.limit));
     setCurrentPage(1); // Reset to first page when filters change
-  }, [trucks, searchQuery, filters]);
+  }, [trucks, searchQuery, filters, pagination.limit]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -194,30 +191,7 @@ export default function TrucksPage() {
     }
   };
 
-  const handleAssignDriver = (truck: Truck) => {
-    // TODO: Implement driver assignment modal
-    alert("Driver assignment functionality will be implemented soon!");
-  };
 
-  const handleUpdateStatus = async (truckId: number, status: Truck['status']) => {
-    try {
-      await fleetService.updateTruckStatus(truckId, status);
-      alert("Truck status updated successfully!");
-      // Refresh the trucks list
-      const updatedTrucks = trucks.map(truck => 
-        truck.id === truckId ? { ...truck, status } : truck
-      );
-      setTrucks(updatedTrucks);
-    } catch (error) {
-      console.error("Failed to update truck status:", error);
-      alert("Failed to update truck status. Please try again.");
-    }
-  };
-
-  const handleUpdateLocation = (truck: Truck) => {
-    // TODO: Implement location update modal
-    alert("Location update functionality will be implemented soon!");
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

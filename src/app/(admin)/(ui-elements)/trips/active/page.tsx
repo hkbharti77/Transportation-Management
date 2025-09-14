@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { tripService, Trip, TripFilterOptions } from '@/services/tripService';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -29,7 +29,7 @@ export default function ActiveTripsPage() {
   });
 
   // Load active trips
-  const loadActiveTrips = async () => {
+  const loadActiveTrips = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -41,19 +41,20 @@ export default function ActiveTripsPage() {
       
       setTrips(response.data);
       setTotalTrips(response.total || response.data.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading active trips:', error);
-      setError(error.response?.data?.message || 'Failed to load active trips');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load active trips';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadActiveTrips();
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, loadActiveTrips]);
 
   // Auto-refresh every 30 seconds for real-time updates
   useEffect(() => {
@@ -70,16 +71,16 @@ export default function ActiveTripsPage() {
         clearInterval(interval);
       }
     };
-  }, [autoRefresh, isAuthenticated, user]);
+  }, [autoRefresh, isAuthenticated, user, loadActiveTrips]);
 
   // Event handlers
   const handleDelete = async (tripId: number) => {
     try {
       await tripService.deleteTrip(tripId);
       await loadActiveTrips(); // Reload the list
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting trip:', error);
-      setError(error.response?.data?.message || 'Failed to delete trip');
+      setError((error as Error).message || 'Failed to delete trip');
     }
   };
 
@@ -168,7 +169,7 @@ export default function ActiveTripsPage() {
       </div>
 
       {/* Status Info */}
-      <ComponentCard>
+      <ComponentCard title="">
         <div className="p-4 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
@@ -219,11 +220,11 @@ export default function ActiveTripsPage() {
           {trips.slice(0, 6).map((trip) => {
             const progress = calculateProgress(trip);
             return (
-              <ComponentCard key={trip.id}>
+              <ComponentCard key={trip.id} title="">
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-gray-900 dark:text-white">Trip #{trip.id}</h3>
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                    <Badge color="success">
                       IN PROGRESS
                     </Badge>
                   </div>
@@ -298,7 +299,7 @@ export default function ActiveTripsPage() {
               onDelete={handleDelete}
               currentUserRole={user?.role}
               loading={loading}
-              showEditButton={false} // Hide edit for active trips
+              // showEditButton={false} // Hide edit for active trips
             />
           )}
 

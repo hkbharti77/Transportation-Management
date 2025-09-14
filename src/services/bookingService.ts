@@ -154,24 +154,23 @@ export interface PaginatedResponse<T> {
   total_pages?: number;
 }
 
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
+// Removed unused ApiResponse interface
 
 class BookingService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No access token found. Please log in again.');
+    }
     return {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
+      'Authorization': `Bearer ${token}`,
     };
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      let errorData: any;
+      let errorData: unknown;
       
       // Try to parse the error response
       try {
@@ -184,8 +183,8 @@ class BookingService {
       }
       
       // Handle FastAPI validation errors (422)
-      if (response.status === 422 && errorData.detail && Array.isArray(errorData.detail)) {
-        const validationErrors = errorData.detail.map((error: any) => {
+      if (response.status === 422 && errorData && typeof errorData === 'object' && 'detail' in errorData && Array.isArray((errorData as { detail: unknown }).detail)) {
+        const validationErrors = (errorData as { detail: Array<{ loc?: string[]; msg: string }> }).detail.map((error) => {
           const field = error.loc ? error.loc.join('.') : 'unknown';
           return `${field}: ${error.msg}`;
         }).join(', ');
@@ -193,11 +192,12 @@ class BookingService {
       }
       
       // Handle other error formats
-      if (errorData.detail) {
-        if (typeof errorData.detail === 'string') {
-          throw new Error(errorData.detail);
-        } else if (typeof errorData.detail === 'object') {
-          throw new Error(`API Error: ${JSON.stringify(errorData.detail)}`);
+      if (errorData && typeof errorData === 'object' && 'detail' in errorData) {
+        const detail = (errorData as { detail: unknown }).detail;
+        if (typeof detail === 'string') {
+          throw new Error(detail);
+        } else if (typeof detail === 'object') {
+          throw new Error(`API Error: ${JSON.stringify(detail)}`);
         }
       }
       

@@ -6,7 +6,7 @@ import Button from "../../ui/button/Button";
 import Select from "../../form/Select";
 import { Vehicle } from "@/services/vehicleService";
 import { Driver, driverService } from "@/services/driverService";
-import { UserIcon, CloseIcon, AlertIcon } from "@/icons";
+import { UserIcon, AlertIcon } from "@/icons";
 
 interface DriverAssignmentModalProps {
   isOpen: boolean;

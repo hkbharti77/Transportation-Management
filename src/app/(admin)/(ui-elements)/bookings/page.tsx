@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { bookingService, Booking } from '@/services/bookingService';
 import ComponentCard from "@/components/common/ComponentCard";
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from "@/components/ui/button/Button";

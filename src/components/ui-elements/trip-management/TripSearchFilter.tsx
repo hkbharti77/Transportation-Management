@@ -7,7 +7,7 @@ import { driverService } from '@/services/driverService';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
 import Button from '@/components/ui/button/Button';
-import { EyeIcon, GridIcon, CloseIcon } from '@/icons';
+// Removed unused CloseIcon import
 
 interface TripSearchFilterProps {
   filters: TripFilterOptions;
@@ -301,7 +301,7 @@ export default function TripSearchFilter({
           
           {localFilters.search && (
             <span className="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-200 dark:border-blue-800">
-              🔍 Search: "{localFilters.search}"
+              🔍 Search: &quot;{localFilters.search}&quot;
             </span>
           )}
           

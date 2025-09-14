@@ -98,11 +98,7 @@ const CreateRoutePage: React.FC = () => {
     }
   };
 
-  const breadcrumbItems = [
-    { name: "Dashboard", path: "/" },
-    { name: "Routes", path: "/routes" },
-    { name: "Create Route", path: "/routes/create" },
-  ];
+
 
   if (!isAdmin) {
     return null; // Will redirect in useEffect

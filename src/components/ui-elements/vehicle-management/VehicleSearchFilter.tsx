@@ -11,14 +11,12 @@ interface VehicleSearchFilterProps {
   onFiltersChange: (filters: VehicleFilterOptions) => void;
   isLoading?: boolean;
   initialFilters?: VehicleFilterOptions;
-  readOnlyMode?: boolean;
 }
 
 export default function VehicleSearchFilter({
   onFiltersChange,
   isLoading = false,
-  initialFilters = {},
-  readOnlyMode = false
+  initialFilters = {}
 }: VehicleSearchFilterProps) {
   const [filters, setFilters] = useState<VehicleFilterOptions>(initialFilters);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,7 +30,7 @@ export default function VehicleSearchFilter({
     return () => clearTimeout(timeoutId);
   }, [filters, onFiltersChange]);
 
-  const handleFilterChange = (key: keyof VehicleFilterOptions, value: any) => {
+  const handleFilterChange = (key: keyof VehicleFilterOptions, value: string | number | boolean | undefined) => {
     setFilters(prev => ({
       ...prev,
       [key]: value || undefined
@@ -171,14 +169,14 @@ export default function VehicleSearchFilter({
                 { value: "unassigned", label: "Without Driver" }
               ]}
               value={
-                filters.assigned_driver_id === null ? "unassigned" :
-                filters.assigned_driver_id !== undefined ? "assigned" : ""
+                filters.assigned_driver_id === undefined ? "" :
+                filters.assigned_driver_id === 0 ? "unassigned" : "assigned"
               }
               onChange={(value) => {
                 if (value === "assigned") {
                   handleFilterChange("assigned_driver_id", 1); // Any driver ID indicates assigned
                 } else if (value === "unassigned") {
-                  handleFilterChange("assigned_driver_id", null);
+                  handleFilterChange("assigned_driver_id", 0); // Use 0 to indicate unassigned
                 } else {
                   handleFilterChange("assigned_driver_id", undefined);
                 }
@@ -196,7 +194,7 @@ export default function VehicleSearchFilter({
           
           {filters.search && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-              Search: "{filters.search}"
+              Search: &quot;{filters.search}&quot;
             </span>
           )}
           
@@ -218,7 +216,7 @@ export default function VehicleSearchFilter({
             </span>
           )}
           
-          {filters.assigned_driver_id === null && (
+          {filters.assigned_driver_id === 0 && (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">
               Unassigned
             </span>

@@ -96,9 +96,9 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
           onSuccess();
         }
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrors({
-        currentPassword: error.message || "Failed to change password. Please check your current password."
+        currentPassword: (error as Error).message || "Failed to change password. Please check your current password."
       });
     } finally {
       setIsLoading(false);

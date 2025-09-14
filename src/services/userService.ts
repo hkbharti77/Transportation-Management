@@ -16,11 +16,7 @@ interface User {
   password?: string; // Optional password for creation
 }
 
-interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
+// Removed unused ApiResponse interface
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -49,6 +45,13 @@ class UserService {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('current_user');
+        window.location.href = '/signin';
+        throw new Error('Authentication failed. Please log in again.');
+      }
+      
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
     }
@@ -77,6 +80,7 @@ class UserService {
 
     const data = await this.handleResponse<{ access_token: string; user: User }>(response);
     localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('current_user', JSON.stringify(data.user));
     return data;
   }
 
@@ -201,8 +205,7 @@ class UserService {
   // Get drivers with advanced pagination and filtering
   async getDriversWithPagination(
     page: number = 1,
-    limit: number = 10,
-    filters: Omit<FilterOptions, 'page' | 'limit'> = {}
+    limit: number = 10
   ): Promise<PaginatedResponse<User>> {
     // Validate pagination parameters
     const validPage = Math.max(1, page);
@@ -322,35 +325,35 @@ class UserService {
   }
 
   // Change user role
-  async changeUserRole(userId: number, role: string): Promise<ApiResponse<User>> {
+  async changeUserRole(userId: number, role: string): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ role }),
     });
 
-    return this.handleResponse<ApiResponse<User>>(response);
+    return this.handleResponse<User>(response);
   }
 
   // Activate/Deactivate user
-  async toggleUserStatus(userId: number, isActive: boolean): Promise<ApiResponse<User>> {
+  async toggleUserStatus(userId: number, isActive: boolean): Promise<User> {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/activate`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ is_active: isActive }),
     });
 
-    return this.handleResponse<ApiResponse<User>>(response);
+    return this.handleResponse<User>(response);
   }
 
   // Delete user
-  async deleteUser(userId: number): Promise<ApiResponse<null>> {
+  async deleteUser(userId: number): Promise<null> {
     const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse<ApiResponse<null>>(response);
+    return this.handleResponse<null>(response);
   }
 
   // Delete user (Admin only) - New method for the specific endpoint
@@ -370,17 +373,17 @@ class UserService {
   }
 
   // Reset user password
-  async resetUserPassword(userId: number): Promise<ApiResponse<{ message: string }>> {
+  async resetUserPassword(userId: number): Promise<{ message: string }> {
     const response = await fetch(`${API_BASE_URL}/users/${userId}/reset-password`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse<ApiResponse<{ message: string }>>(response);
+    return this.handleResponse<{ message: string }>(response);
   }
 
   // Change current user password
-  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<{ message: string }>> {
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
     const params = new URLSearchParams();
     params.append('current_password', currentPassword);
     params.append('new_password', newPassword);
@@ -390,7 +393,7 @@ class UserService {
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse<ApiResponse<{ message: string }>>(response);
+    return this.handleResponse<{ message: string }>(response);
   }
 
   // Logout
@@ -430,4 +433,4 @@ class UserService {
 
 // Export singleton instance
 export const userService = new UserService();
-export type { User, ApiResponse, PaginatedResponse, FilterOptions };
+export type { User, PaginatedResponse, FilterOptions };

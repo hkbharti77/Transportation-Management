@@ -174,7 +174,7 @@ export default function DispatchForm({ onSuccess, onCancel, defaultBookingId }: 
               <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
                 <p>
                   The system will automatically check if the booking exists, assign a driver if the booking has a truck,
-                  and set the initial dispatch status to "pending".
+                  and set the initial dispatch status to &quot;pending&quot;.
                 </p>
               </div>
             </div>

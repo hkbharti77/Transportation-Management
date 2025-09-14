@@ -1,4 +1,4 @@
-import { tripService, Trip, TripResources } from './tripService';
+import { tripService, TripResources } from './tripService';
 
 // Mock the localStorage
 Object.defineProperty(window, 'localStorage', {

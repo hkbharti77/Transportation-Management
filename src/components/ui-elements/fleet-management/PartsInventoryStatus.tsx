@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ComponentCard from "@/components/common/ComponentCard";
 import { useAuth } from "@/context/AuthContext";
 import { serviceService } from "@/services/serviceService";

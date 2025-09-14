@@ -3,7 +3,7 @@ import Checkbox from "@/components/form/input/Checkbox";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
+import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { useAuth } from "@/context/AuthContext";
 import { userService } from "@/services/userService";
 import Link from "next/link";
@@ -75,8 +75,8 @@ export default function SignInForm() {
       setTimeout(() => {
         window.location.href = '/';
       }, 1500);
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }

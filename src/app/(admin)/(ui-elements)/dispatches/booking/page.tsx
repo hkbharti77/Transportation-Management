@@ -16,7 +16,7 @@ export default function BookingDispatchPage() {
   const [dispatch, setDispatch] = useState<Dispatch | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [, setRefreshTrigger] = useState(0);
 
   // Authentication check
   React.useEffect(() => {

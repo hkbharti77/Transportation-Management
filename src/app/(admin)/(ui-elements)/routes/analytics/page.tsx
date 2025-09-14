@@ -62,11 +62,7 @@ const RouteAnalyticsPage: React.FC = () => {
     return `${mins}m`;
   };
 
-  const breadcrumbItems = [
-    { name: "Dashboard", path: "/" },
-    { name: "Routes", path: "/routes" },
-    { name: "Analytics", path: "/routes/analytics" },
-  ];
+
 
   if (loading) {
     return (

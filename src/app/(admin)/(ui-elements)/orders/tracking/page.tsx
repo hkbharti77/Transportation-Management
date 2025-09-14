@@ -7,10 +7,29 @@ import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Input from '@/components/form/input/InputField';
 
+// Define proper interfaces for tracking data
+interface TrackingEvent {
+  timestamp: string;
+  location: string;
+  description: string;
+  status: string;
+}
+
+interface TrackingResult {
+  id: string;
+  status: string;
+  pickup_location: string;
+  drop_location: string;
+  estimated_delivery: string;
+  current_location: string;
+  progress: number;
+  events: TrackingEvent[];
+}
+
 export default function OrderTrackingPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [trackingId, setTrackingId] = useState('');
-  const [trackingResult, setTrackingResult] = useState<any>(null);
+  const [trackingResult, setTrackingResult] = useState<TrackingResult | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleTrackOrder = () => {
@@ -25,7 +44,7 @@ export default function OrderTrackingPage() {
     // Simulate API call
     setTimeout(() => {
       // Mock data for demonstration
-      setTrackingResult({
+      const result: TrackingResult = {
         id: trackingId,
         status: 'in_transit',
         pickup_location: 'New York, NY',
@@ -53,7 +72,9 @@ export default function OrderTrackingPage() {
             status: 'in_transit'
           }
         ]
-      });
+      };
+      
+      setTrackingResult(result);
       setLoading(false);
     }, 1000);
   };
@@ -115,7 +136,7 @@ export default function OrderTrackingPage() {
               <Input
                 type="text"
                 placeholder="Enter order ID or tracking number"
-                defaultValue={trackingId}
+                value={trackingId}
                 onChange={(e) => setTrackingId(e.target.value)}
                 className="w-full"
               />
@@ -198,7 +219,7 @@ export default function OrderTrackingPage() {
           <ComponentCard title="Tracking History">
             <div className="p-6">
               <div className="space-y-4">
-                {trackingResult.events.map((event: any, index: number) => (
+                {trackingResult.events.map((event, index) => (
                   <div key={index} className="flex gap-4">
                     <div className="flex flex-col items-center">
                       <div className="w-3 h-3 rounded-full bg-green-500"></div>

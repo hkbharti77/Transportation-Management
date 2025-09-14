@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import { PlusIcon } from "@/icons";
 import OrderModal from "@/components/ui-elements/order-management/OrderModal";
@@ -39,25 +38,8 @@ export default function OrdersPage() {
   const [ordersPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Authentication check
-  useEffect(() => {
-    if (authLoading) return;
-
-    if (!isAuthenticated) {
-      router.push('/signin');
-      return;
-    }
-
-    // Only allow admin and staff to access orders management
-    if (user?.role !== 'admin' && user?.role !== 'staff') {
-      router.push('/dashboard');
-      return;
-    }
-
-    loadOrders();
-  }, [isAuthenticated, user, authLoading, router]);
-
-  const loadOrders = async () => {
+  // Move loadOrders function declaration before useEffect
+  const loadOrders = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -82,14 +64,32 @@ export default function OrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, ordersPerPage, searchQuery, filters]);
+
+  // Authentication check
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (!isAuthenticated) {
+      router.push('/signin');
+      return;
+    }
+
+    // Only allow admin and staff to access orders management
+    if (user?.role !== 'admin' && user?.role !== 'staff') {
+      router.push('/dashboard');
+      return;
+    }
+
+    loadOrders();
+  }, [isAuthenticated, user, authLoading, router, loadOrders]);
 
   // Reload orders when search, filters, or pagination changes
   useEffect(() => {
     if (isAuthenticated && user) {
       loadOrders();
     }
-  }, [searchQuery, filters, currentPage, isAuthenticated, user]);
+  }, [searchQuery, filters, currentPage, isAuthenticated, user, loadOrders]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

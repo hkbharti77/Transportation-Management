@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Modal } from '@/components/ui/modal';
 import Button from '@/components/ui/button/Button';
 import { fleetService, TruckLocationRecord } from '@/services/fleetService';
 import { Truck } from '@/services/fleetService';
-import { CheckCircleIcon, AlertIcon, LocationIcon, ClockIcon } from '@/icons';
+import { AlertIcon, LocationIcon, ClockIcon } from '@/icons';
 import { 
   Table, 
   TableBody, 
@@ -33,14 +33,7 @@ export default function TruckLocationHistoryModal({
   const [hasMore, setHasMore] = useState(true);
   const recordsPerPage = 20;
 
-  // Fetch location history when modal opens
-  useEffect(() => {
-    if (isOpen && truck) {
-      fetchLocationHistory();
-    }
-  }, [isOpen, truck, currentPage]);
-
-  const fetchLocationHistory = async () => {
+  const fetchLocationHistory = useCallback(async () => {
     if (!truck) return;
 
     try {
@@ -67,7 +60,14 @@ export default function TruckLocationHistoryModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [truck, currentPage]);
+
+  // Fetch location history when modal opens
+  useEffect(() => {
+    if (isOpen && truck) {
+      fetchLocationHistory();
+    }
+  }, [isOpen, truck, currentPage, fetchLocationHistory]);
 
   const loadMore = () => {
     if (!isLoading && hasMore) {
@@ -238,9 +238,9 @@ export default function TruckLocationHistoryModal({
                       </TableCell>
                       <TableCell className="px-4 py-2 text-start">
                         <div className="flex items-center gap-2">
-                          {getSourceIcon(record.source)}
+                          {getSourceIcon(record.source || '')}
                           <span className="text-sm text-gray-800 dark:text-white/90">
-                            {getSourceLabel(record.source)}
+                            {getSourceLabel(record.source || '')}
                           </span>
                         </div>
                       </TableCell>

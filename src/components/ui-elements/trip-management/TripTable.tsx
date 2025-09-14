@@ -844,7 +844,7 @@ export default function TripTable({
                 className="w-full"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Enter the seat number you'd like to book
+                Enter the seat number you&apos;d like to book
               </p>
             </div>
 

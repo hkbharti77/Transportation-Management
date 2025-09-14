@@ -265,7 +265,7 @@ class VehicleService {
 
   // Get available vehicles (active status)
   async getAvailableVehicles(): Promise<Vehicle[]> {
-    const response = await fetch(`${API_BASE_URL}/vehicles/?status=active`, {
+    const response = await fetch(`${API_BASE_URL}/vehicles/?status=active&limit=100`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });

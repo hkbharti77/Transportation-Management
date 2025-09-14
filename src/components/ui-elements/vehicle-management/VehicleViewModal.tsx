@@ -5,7 +5,7 @@ import { Modal } from "../../ui/modal";
 import Button from "../../ui/button/Button";
 import Badge from "../../ui/badge/Badge";
 import { Vehicle } from "@/services/vehicleService";
-import { TruckIcon, CloseIcon, UserIcon, CalenderIcon, InfoIcon } from "@/icons";
+import { CloseIcon, UserIcon, CalenderIcon, InfoIcon } from "@/icons";
 
 interface VehicleViewModalProps {
   isOpen: boolean;

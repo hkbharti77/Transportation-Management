@@ -157,7 +157,7 @@ export default function AvailableDriversPage() {
                   </h3>
                   <div className="mt-2 text-sm text-purple-700 dark:text-purple-300">
                     {selectedDriver ? (
-                      <p>Selected: <strong>{selectedDriver.employee_id}</strong> - Click "Confirm Assignment" to proceed</p>
+                      <p>Selected: <strong>{selectedDriver.employee_id}</strong> - Click &quot;Confirm Assignment&quot; to proceed</p>
                     ) : (
                       <p>Please select a driver from the list below</p>
                     )}
@@ -206,7 +206,6 @@ export default function AvailableDriversPage() {
         <div className="p-6">
           <AvailableDrivers
             onDriverSelect={handleDriverSelect}
-            onRefresh={handleRefresh}
             refreshTrigger={refreshTrigger}
             selectedDriverId={selectedDriver?.id || null}
           />

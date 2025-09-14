@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fleetService, Fleet, Truck } from "@/services/fleetService";
 import { driverService, Driver } from "@/services/driverService";
@@ -63,27 +63,7 @@ export default function FleetsPage() {
     is_available: undefined as boolean | undefined
   });
 
-  useEffect(() => {
-    // Check if user is authenticated before fetching fleets
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      router.push('/auth/signin');
-      return;
-    }
-    fetchFleets();
-    fetchDrivers();
-  }, [currentPage, pageSize, filters, currentDriverPage, driverPageSize, driverFilters, router]);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
-  useEffect(() => {
-    setCurrentDriverPage(1);
-  }, [driverFilters]);
-
-  const fetchFleets = async () => {
+  const fetchFleets = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -110,9 +90,9 @@ export default function FleetsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, pageSize, filters, router]);
 
-  const fetchDrivers = async () => {
+  const fetchDrivers = useCallback(async () => {
     try {
       setIsLoadingDrivers(true);
       
@@ -137,7 +117,27 @@ export default function FleetsPage() {
     } finally {
       setIsLoadingDrivers(false);
     }
-  };
+  }, [currentDriverPage, driverPageSize, driverFilters, router]);
+
+  useEffect(() => {
+    // Check if user is authenticated before fetching fleets
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/auth/signin');
+      return;
+    }
+    fetchFleets();
+    fetchDrivers();
+  }, [currentPage, pageSize, filters, currentDriverPage, driverPageSize, driverFilters, router, fetchFleets, fetchDrivers]);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  useEffect(() => {
+    setCurrentDriverPage(1);
+  }, [driverFilters]);
 
   const handleCreateFleet = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,17 +169,6 @@ export default function FleetsPage() {
     }
   };
 
-  const handleDeleteFleet = async (fleetId: number) => {
-    if (!confirm('Are you sure you want to delete this fleet?')) return;
-
-    try {
-      await fleetService.deleteFleet(fleetId);
-      fetchFleets();
-    } catch (error) {
-      console.error('Failed to delete fleet:', error);
-      alert('Failed to delete fleet. Please try again.');
-    }
-  };
 
   const handleCreateDefaultFleet = async () => {
     if (!confirm('This will create a default fleet for the system. Continue?')) return;

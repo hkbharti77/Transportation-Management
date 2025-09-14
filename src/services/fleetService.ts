@@ -153,7 +153,7 @@ class FleetService {
         // Clear invalid token and redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('current_user');
-        window.location.href = '/auth/signin';
+        window.location.href = '/signin';
         throw new Error('Authentication failed. Please log in again.');
       }
       

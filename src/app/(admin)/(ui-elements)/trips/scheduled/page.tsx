@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { tripService, Trip, TripFilterOptions } from '@/services/tripService';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -33,7 +33,7 @@ export default function ScheduledTripsPage() {
   });
 
   // Load scheduled trips
-  const loadScheduledTrips = async () => {
+  const loadScheduledTrips = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -45,19 +45,20 @@ export default function ScheduledTripsPage() {
       
       setTrips(response.data);
       setTotalTrips(response.total || response.data.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading scheduled trips:', error);
-      setError(error.response?.data?.message || 'Failed to load scheduled trips');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load scheduled trips';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadScheduledTrips();
     }
-  }, [isAuthenticated, user, filters]);
+  }, [isAuthenticated, user, filters, loadScheduledTrips]);
 
   // Event handlers
   const handleEdit = (trip: Trip) => {
@@ -69,9 +70,10 @@ export default function ScheduledTripsPage() {
     try {
       await tripService.deleteTrip(tripId);
       await loadScheduledTrips(); // Reload the list
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting trip:', error);
-      setError(error.response?.data?.message || 'Failed to delete trip');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete trip';
+      setError(errorMessage);
     }
   };
 
@@ -270,6 +272,7 @@ export default function ScheduledTripsPage() {
           isOpen={showEditModal}
           onClose={handleModalClose}
           trip={selectedTrip}
+          onSuccess={handleModalClose}
         />
       )}
     </div>

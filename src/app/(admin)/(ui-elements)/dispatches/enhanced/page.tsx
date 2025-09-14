@@ -12,7 +12,7 @@ export default function EnhancedDispatchPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [selectedDispatchId, setSelectedDispatchId] = useState<number | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [, setRefreshTrigger] = useState(0);
 
   // Authentication check
   React.useEffect(() => {

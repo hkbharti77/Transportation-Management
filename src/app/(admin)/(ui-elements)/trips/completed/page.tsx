@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { tripService, Trip, TripFilterOptions } from '@/services/tripService';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -29,7 +29,7 @@ export default function CompletedTripsPage() {
   });
 
   // Load completed trips
-  const loadCompletedTrips = async () => {
+  const loadCompletedTrips = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -41,28 +41,29 @@ export default function CompletedTripsPage() {
       
       setTrips(response.data);
       setTotalTrips(response.total || response.data.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading completed trips:', error);
-      setError(error.response?.data?.message || 'Failed to load completed trips');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load completed trips';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadCompletedTrips();
     }
-  }, [isAuthenticated, user, filters]);
+  }, [isAuthenticated, user, filters, loadCompletedTrips]);
 
   // Event handlers
   const handleDelete = async (tripId: number) => {
     try {
       await tripService.deleteTrip(tripId);
       await loadCompletedTrips(); // Reload the list
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting trip:', error);
-      setError(error.response?.data?.message || 'Failed to delete trip');
+      setError((error as Error).message || 'Failed to delete trip');
     }
   };
 
@@ -184,7 +185,7 @@ export default function CompletedTripsPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Revenue">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -192,7 +193,7 @@ export default function CompletedTripsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Passengers">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">👥</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Passengers</p>
@@ -200,7 +201,7 @@ export default function CompletedTripsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Completed Trips">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">✅</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Completed Trips</p>
@@ -210,7 +211,7 @@ export default function CompletedTripsPage() {
       </div>
 
       {/* Status Info */}
-      <ComponentCard>
+      <ComponentCard title="Completed Trips Information">
         <div className="p-4 bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -265,11 +266,11 @@ export default function CompletedTripsPage() {
       {trips.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {trips.slice(0, 6).map((trip) => (
-            <ComponentCard key={trip.id}>
+            <ComponentCard key={trip.id} title={`Trip #${trip.id}`}>
               <div className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-900 dark:text-white">Trip #{trip.id}</h3>
-                  <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                  <Badge variant="light" color="success">
                     COMPLETED
                   </Badge>
                 </div>
@@ -337,8 +338,8 @@ export default function CompletedTripsPage() {
               onDelete={handleDelete}
               currentUserRole={user?.role}
               loading={loading}
-              showEditButton={false} // Hide edit for completed trips
-              showStatusUpdate={false} // Hide status update for completed trips
+              // showEditButton={false} // Hide edit for completed trips
+              // showStatusUpdate={false} // Hide status update for completed trips
             />
           )}
 

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Driver, CreateDriverRequest, UpdateDriverRequest } from "@/services/driverService";
-import { userService } from "@/services/userService";
-import { fleetService } from "@/services/fleetService";
+import { userService, User } from "@/services/userService";
+import { fleetService, Truck } from "@/services/fleetService";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
@@ -23,8 +23,8 @@ export default function DriverForm({
   isLoading = false,
   mode
 }: DriverFormProps) {
-  const [users, setUsers] = useState<any[]>([]);
-  const [trucks, setTrucks] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<Pick<User, 'id' | 'name' | 'email' | 'role'>> | []>([]);
+  const [trucks, setTrucks] = useState<Array<Pick<Truck, 'id' | 'truck_number' | 'number_plate'>> | []>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   
   const [formData, setFormData] = useState<CreateDriverRequest>({

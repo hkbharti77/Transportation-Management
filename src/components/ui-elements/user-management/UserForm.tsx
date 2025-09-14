@@ -10,7 +10,7 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  role: "admin" | "staff" | "customer" | "public_service_manager";
+  role: "admin" | "staff" | "customer" | "public_service_manager" | "driver";
   is_active: boolean;
   password?: string; // Optional password for creation
 }
@@ -29,6 +29,7 @@ const roleOptions = [
   { value: "staff", label: "Staff" },
   { value: "customer", label: "Customer" },
   { value: "public_service_manager", label: "Public Service Manager" },
+  { value: "driver", label: "Driver" },
 ];
 
 export default function UserForm({
@@ -125,7 +126,7 @@ export default function UserForm({
   const handleRoleChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      role: value as "admin" | "staff" | "customer" | "public_service_manager"
+      role: value as "admin" | "staff" | "customer" | "public_service_manager" | "driver"
     }));
     
     if (errors.role) {

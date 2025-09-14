@@ -74,10 +74,6 @@ export default function ActiveOrdersPage() {
     (order.driver_id?.toString().toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const getStatusBadge = (status: string) => {
-    return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-  };
-
   const getOrderTypeIcon = (cargoType: string) => {
     const icons = {
       general: '📦',
@@ -212,7 +208,7 @@ export default function ActiveOrdersPage() {
                     <div className="text-2xl">{getOrderTypeIcon(order.cargo_type)}</div>
                     <div>
                       <h3 className="font-semibold text-gray-900 dark:text-white">Order #{order.id}</h3>
-                      <Badge className={getStatusBadge(order.status || 'in_progress')}>
+                      <Badge color="warning">
                         IN PROGRESS
                       </Badge>
                     </div>
@@ -283,14 +279,14 @@ export default function ActiveOrdersPage() {
                   <Button
                     size="sm"
                     className="flex-1 text-blue-600 hover:text-blue-800"
-                    variant="ghost"
+                    variant="outline"
                   >
                     Track Live
                   </Button>
                   <Button
                     size="sm"
                     className="flex-1 text-green-600 hover:text-green-800"
-                    variant="ghost"
+                    variant="outline"
                   >
                     Contact Driver
                   </Button>

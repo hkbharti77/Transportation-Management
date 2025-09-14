@@ -9,7 +9,7 @@ import Badge from '@/components/ui/badge/Badge';
 import { bookingService, BookingRevenue } from '@/services/bookingService';
 
 export default function BookingRevenuePage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [revenueData, setRevenueData] = useState<BookingRevenue | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -225,7 +225,7 @@ export default function BookingRevenuePage() {
         <ComponentCard title="Revenue by Booking Status">
           <div className="p-6">
             <div className="space-y-4">
-              {revenueData.revenue_by_status.map((item, index) => {
+              {revenueData.revenue_by_status.map((item) => {
                 const percentage = revenueData.total_revenue > 0 
                   ? Math.round((item.revenue / revenueData.total_revenue) * 100)
                   : 0;
@@ -238,12 +238,11 @@ export default function BookingRevenuePage() {
                   cancelled: 'bg-red-500'
                 };
                 
-                const color = colors[item.status as keyof typeof colors] || 'bg-gray-500';
                 
                 return (
                   <div key={item.status} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full ${color}`}></div>
+                      <div className={`w-4 h-4 rounded-full ${colors[item.status as keyof typeof colors] || 'bg-gray-500'}`}></div>
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                         {item.status.replace('_', ' ')}
                       </span>
@@ -267,16 +266,11 @@ export default function BookingRevenuePage() {
         <ComponentCard title="Revenue by Service Type">
           <div className="p-6">
             <div className="space-y-4">
-              {revenueData.revenue_by_service_type.map((item, index) => {
+              {revenueData.revenue_by_service_type.map((item) => {
                 const percentage = revenueData.total_revenue > 0 
                   ? Math.round((item.revenue / revenueData.total_revenue) * 100)
                   : 0;
                 
-                const colors = {
-                  cargo: 'bg-blue-500',
-                  passenger: 'bg-green-500',
-                  public: 'bg-purple-500'
-                };
                 
                 const icons = {
                   cargo: '🚛',
@@ -284,7 +278,6 @@ export default function BookingRevenuePage() {
                   public: '🚌'
                 };
                 
-                const color = colors[item.service_type as keyof typeof colors] || 'bg-gray-500';
                 const icon = icons[item.service_type as keyof typeof icons] || '🚐';
                 
                 return (
@@ -350,7 +343,7 @@ export default function BookingRevenuePage() {
                 
                 <div className="space-y-3">
                   <h4 className="font-semibold text-gray-900 dark:text-white">Daily Breakdown</h4>
-                  {revenueData.daily_revenue_trend.map((item, index) => (
+                  {revenueData.daily_revenue_trend.map((item) => (
                     <div key={item.date} className="flex items-center justify-between py-2 px-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <div className="flex items-center gap-3">
                         <div className="text-blue-500 font-mono text-sm">

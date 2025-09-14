@@ -115,10 +115,13 @@ export interface AvailableDriver {
 class DispatchService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('No access token found. Please log in again.');
+    }
     console.log('Dispatch API - Auth token present:', !!token);
     return {
       'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
+      'Authorization': `Bearer ${token}`,
     };
   }
 
@@ -126,7 +129,7 @@ class DispatchService {
     console.log('Dispatch API - Response status:', response.status, response.statusText);
     
     if (!response.ok) {
-      let errorData: any;
+      let errorData: unknown;
       
       // Try to parse the error response
       try {
@@ -139,8 +142,8 @@ class DispatchService {
       }
       
       // Handle FastAPI validation errors (422)
-      if (response.status === 422 && errorData.detail && Array.isArray(errorData.detail)) {
-        const validationErrors = errorData.detail.map((error: any) => {
+      if (response.status === 422 && errorData && typeof errorData === 'object' && 'detail' in errorData && Array.isArray((errorData as { detail: unknown }).detail)) {
+        const validationErrors = (errorData as { detail: Array<{ loc?: string[]; msg: string }> }).detail.map((error) => {
           const field = error.loc ? error.loc.join('.') : 'unknown';
           return `${field}: ${error.msg}`;
         }).join(', ');
@@ -158,17 +161,21 @@ class DispatchService {
       }
       
       // Handle other error formats
-      if (errorData.detail) {
-        if (typeof errorData.detail === 'string') {
-          throw new Error(errorData.detail);
-        } else if (typeof errorData.detail === 'object') {
-          throw new Error(`API Error: ${JSON.stringify(errorData.detail)}`);
+      if (errorData && typeof errorData === 'object' && 'detail' in errorData) {
+        const errorDetail = (errorData as { detail: unknown }).detail;
+        if (typeof errorDetail === 'string') {
+          throw new Error(errorDetail);
+        } else if (typeof errorDetail === 'object') {
+          throw new Error(`API Error: ${JSON.stringify(errorDetail)}`);
         }
       }
       
       // Handle specific business logic errors
-      if (response.status === 400 && errorData.detail === "Dispatch already exists for this booking") {
-        throw new Error("A dispatch already exists for this booking. Please use the existing dispatch or cancel it first.");
+      if (response.status === 400 && errorData && typeof errorData === 'object' && 'detail' in errorData) {
+        const errorDetail = (errorData as { detail: unknown }).detail;
+        if (errorDetail === "Dispatch already exists for this booking") {
+          throw new Error("A dispatch already exists for this booking. Please use the existing dispatch or cancel it first.");
+        }
       }
       
       // Fallback to generic message with status
@@ -288,7 +295,7 @@ class DispatchService {
     try {
       const dispatch = await this.getDispatchByBookingId(bookingId);
       return [dispatch];
-    } catch (error) {
+    } catch {
       // If no dispatch found, return empty array
       return [];
     }

@@ -105,7 +105,7 @@ export default function NewDispatchPage() {
                 <ul className="list-disc list-inside space-y-1">
                   <li>Check if the booking exists and is valid</li>
                   <li>Auto-assign a driver if the booking has a truck assigned</li>
-                  <li>Set the initial dispatch status to "pending"</li>
+                  <li>Set the initial dispatch status to &quot;pending&quot;</li>
                   <li>Create dispatch and arrival time slots</li>
                   <li>Generate tracking information</li>
                 </ul>

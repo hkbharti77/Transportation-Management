@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { userService, User } from "@/services/userService";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -10,10 +10,7 @@ import {
   ChevronLeftIcon,
   PencilIcon,
   TrashBinIcon,
-  UserIcon,
-  EnvelopeIcon,
-  UserIcon as PhoneIcon,
-  CheckLineIcon
+  UserIcon
 } from "@/icons";
 
 export default function PublicManagerDetailsPage() {
@@ -24,13 +21,7 @@ export default function PublicManagerDetailsPage() {
   const [loading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (managerId) {
-      loadManager();
-    }
-  }, [managerId]);
-
-  const loadManager = async () => {
+  const loadManager = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -43,7 +34,13 @@ export default function PublicManagerDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [managerId]);
+
+  useEffect(() => {
+    if (managerId) {
+      loadManager();
+    }
+  }, [managerId, loadManager]);
 
   const handleEdit = () => {
     router.push(`/public-managers/${managerId}/edit`);

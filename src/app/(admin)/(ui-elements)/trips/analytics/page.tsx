@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { tripService, Trip } from '@/services/tripService';
+import { tripService } from '@/services/tripService';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
@@ -28,8 +28,9 @@ interface AnalyticsData {
 }
 
 export default function TripAnalyticsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState('30'); // Last 30 days
 
   const loadAnalyticsData = async () => {
@@ -125,7 +126,7 @@ export default function TripAnalyticsPage() {
     loadAnalyticsData();
   };
 
-  if (isLoading || !analyticsData) {
+  if (authLoading || loading || !analyticsData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-500"></div>
@@ -175,7 +176,7 @@ export default function TripAnalyticsPage() {
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Trips">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">🚌</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Trips</p>
@@ -184,7 +185,7 @@ export default function TripAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Revenue">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Revenue</p>
@@ -193,7 +194,7 @@ export default function TripAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Passengers">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">👥</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Passengers</p>
@@ -202,7 +203,7 @@ export default function TripAnalyticsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Avg Occupancy">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📈</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Avg Occupancy</p>
@@ -258,7 +259,7 @@ export default function TripAnalyticsPage() {
               <span className="text-gray-600 dark:text-gray-400">On-Time Performance</span>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-green-600">{analyticsData.performanceMetrics.onTimePerformance}%</span>
-                <Badge className="bg-green-100 text-green-800 text-xs">GOOD</Badge>
+                <Badge variant="light" color="success" size="sm">GOOD</Badge>
               </div>
             </div>
             
@@ -266,7 +267,7 @@ export default function TripAnalyticsPage() {
               <span className="text-gray-600 dark:text-gray-400">Cancellation Rate</span>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-yellow-600">{analyticsData.performanceMetrics.cancellationRate.toFixed(1)}%</span>
-                <Badge className="bg-yellow-100 text-yellow-800 text-xs">MODERATE</Badge>
+                <Badge variant="light" color="warning" size="sm">MODERATE</Badge>
               </div>
             </div>
             
@@ -279,7 +280,7 @@ export default function TripAnalyticsPage() {
               <span className="text-gray-600 dark:text-gray-400">Customer Satisfaction</span>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-blue-600">{analyticsData.performanceMetrics.customerSatisfaction}%</span>
-                <Badge className="bg-blue-100 text-blue-800 text-xs">EXCELLENT</Badge>
+                <Badge variant="light" color="info" size="sm">EXCELLENT</Badge>
               </div>
             </div>
           </div>
@@ -304,7 +305,7 @@ export default function TripAnalyticsPage() {
                   <tr key={route.routeId} className="border-b border-gray-100 dark:border-gray-800">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-blue-100 text-blue-800 text-xs">#{index + 1}</Badge>
+                        <Badge variant="light" color="info" size="sm">#{index + 1}</Badge>
                         <span className="font-medium">Route {route.routeId}</span>
                       </div>
                     </td>

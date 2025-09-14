@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -10,7 +10,6 @@ import BookingForm from '@/components/ui-elements/booking-management/BookingForm
 export default function NewBookingPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
-  const [creating, setCreating] = useState(false);
 
   const handleCreateSuccess = () => {
     // Redirect to bookings list or show success message
@@ -69,7 +68,7 @@ export default function NewBookingPage() {
               <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
                 <p>
                   The system will automatically assign an available truck and driver to your booking
-                  and set the initial booking status to "confirmed".
+                  and set the initial booking status to &quot;confirmed&quot;.
                 </p>
               </div>
             </div>

@@ -18,7 +18,15 @@ type Schedule = {
     estimated_duration?: number;
     cost?: number;
   }>>;
-  maintenance_schedules: any[];
+  maintenance_schedules: Array<{
+    schedule_id: number;
+    vehicle_id: number;
+    service_type: string;
+    scheduled_date: string;
+    priority: string;
+    estimated_duration: number;
+    cost: number;
+  }>;
 };
 
 export default function MaintenanceSchedule() {

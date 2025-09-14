@@ -68,13 +68,13 @@ export default function CancelledOrdersPage() {
     return icons[cargoType as keyof typeof icons] || '📦';
   };
 
-  const getRefundStatusBadge = (status: string) => {
-    const styles = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      processed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      denied: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+  const getRefundStatusColor = (status: string): "warning" | "success" | "error" => {
+    const colors: Record<string, "warning" | "success" | "error"> = {
+      pending: 'warning',
+      processed: 'success',
+      denied: 'error',
     };
-    return styles[status as keyof typeof styles] || styles.pending;
+    return colors[status] || 'warning';
   };
 
   const formatDate = (dateString: string) => {
@@ -130,7 +130,7 @@ export default function CancelledOrdersPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Cancelled">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">❌</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Cancelled</p>
@@ -138,7 +138,7 @@ export default function CancelledOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Revenue Loss">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💸</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Revenue Loss</p>
@@ -146,7 +146,7 @@ export default function CancelledOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Refunded">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Refunded</p>
@@ -154,7 +154,7 @@ export default function CancelledOrdersPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Refund Rate">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📊</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Refund Rate</p>
@@ -203,7 +203,7 @@ export default function CancelledOrdersPage() {
             </div>
           </ComponentCard>
         ) : orders.length === 0 ? (
-          <ComponentCard>
+          <ComponentCard title="No Cancelled Orders">
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">❌</div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Cancelled Orders</h3>
@@ -212,7 +212,7 @@ export default function CancelledOrdersPage() {
           </ComponentCard>
         ) : (
           orders.map((order) => (
-            <ComponentCard key={order.id}>
+            <ComponentCard key={order.id} title={`Cancelled Order #${order.id}`}>
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
@@ -227,11 +227,11 @@ export default function CancelledOrdersPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Badge className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                    <Badge variant="light" color="error">
                       ❌ CANCELLED
                     </Badge>
                     {order.refund_status && (
-                      <Badge className={getRefundStatusBadge(order.refund_status)}>
+                      <Badge variant="light" color={getRefundStatusColor(order.refund_status)}>
                         {order.refund_status.toUpperCase()}
                       </Badge>
                     )}

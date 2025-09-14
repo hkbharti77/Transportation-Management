@@ -2,17 +2,20 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fleetService, CreateTruckRequest } from "@/services/fleetService";
+import { fleetService, CreateTruckRequest, UpdateTruckRequest } from "@/services/fleetService";
 import TruckForm from "@/components/ui-elements/fleet-management/TruckForm";
 
 export default function CreateTruckPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (truckData: CreateTruckRequest) => {
+  const handleSubmit = async (truckData: CreateTruckRequest | UpdateTruckRequest) => {
+    // For create mode, we know it's a CreateTruckRequest
+    const createData = truckData as CreateTruckRequest;
+    
     setIsLoading(true);
     try {
-      await fleetService.createTruck(truckData);
+      await fleetService.createTruck(createData);
       alert("Truck created successfully!");
       router.push('/trucks');
     } catch (error) {

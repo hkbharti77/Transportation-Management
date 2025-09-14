@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { bookingService, Booking } from '@/services/bookingService';
 import ComponentCard from '@/components/common/ComponentCard';
 import Button from '@/components/ui/button/Button';
@@ -13,6 +14,7 @@ interface BookingDetailsProps {
 }
 
 export default function BookingDetails({ bookingId, onClose, onRefresh }: BookingDetailsProps) {
+  const router = useRouter();
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -284,6 +286,12 @@ export default function BookingDetails({ bookingId, onClose, onRefresh }: Bookin
                 ❌ Cancel
               </Button>
             )}
+            <Button
+              onClick={() => router.push(`/bookings/payments/booking/${booking.booking_id}`)}
+              className="px-4 py-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded text-sm"
+            >
+              💳 View Payments
+            </Button>
             <Button
               onClick={loadBooking}
               className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded text-sm"

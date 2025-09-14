@@ -1,100 +1,35 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+// Removed unused useRouter import
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import Button from '@/components/ui/button/Button';
 import Badge from '@/components/ui/badge/Badge';
+import { bookingService, Booking } from '@/services/bookingService';
 
-interface Booking {
-  id: number;
-  trip_id: number;
-  user_id: number;
-  customer_name: string;
-  seat_number: string;
-  status: 'confirmed' | 'cancelled' | 'pending' | 'completed';
-  booking_time: string;
-  trip_route: string;
-  departure_time: string;
-  fare: number;
-  payment_status: 'paid' | 'pending' | 'refunded';
-  cancellation_date: string;
-  cancellation_reason: string;
-  refund_amount?: number;
-  refund_status: 'pending' | 'processed' | 'denied';
-}
+// We'll use the imported Booking interface directly instead of defining our own
 
 export default function CancelledBookingsPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [totalBookings, setTotalBookings] = useState(0);
   const [totalLoss, setTotalLoss] = useState(0);
-
-  // Mock cancelled bookings data
-  const mockCancelledBookings: Booking[] = [
-    {
-      id: 5,
-      trip_id: 105,
-      user_id: 205,
-      customer_name: "Eva Davis",
-      seat_number: "E15",
-      status: 'cancelled',
-      booking_time: '2024-01-12T10:30:00Z',
-      trip_route: "Hyderabad → Secunderabad",
-      departure_time: '2024-01-15T18:45:00Z',
-      fare: 120.00,
-      payment_status: 'refunded',
-      cancellation_date: '2024-01-13T09:15:00Z',
-      cancellation_reason: "Customer changed travel plans",
-      refund_amount: 96.00, // 80% refund due to cancellation policy
-      refund_status: 'processed'
-    },
-    {
-      id: 8,
-      trip_id: 108,
-      user_id: 208,
-      customer_name: "Robert Johnson",
-      seat_number: "F03",
-      status: 'cancelled',
-      booking_time: '2024-01-11T14:20:00Z',
-      trip_route: "Mumbai → Goa",
-      departure_time: '2024-01-14T07:30:00Z',
-      fare: 850.00,
-      payment_status: 'refunded',
-      cancellation_date: '2024-01-11T20:45:00Z',
-      cancellation_reason: "Late cancellation - within 2 hours of departure",
-      refund_amount: 0, // No refund due to policy
-      refund_status: 'denied'
-    },
-    {
-      id: 9,
-      trip_id: 109,
-      user_id: 209,
-      customer_name: "Jennifer Wilson",
-      seat_number: "B22",
-      status: 'cancelled',
-      booking_time: '2024-01-10T16:45:00Z',
-      trip_route: "Chennai → Coimbatore",
-      departure_time: '2024-01-13T11:00:00Z',
-      fare: 420.00,
-      payment_status: 'pending',
-      cancellation_date: '2024-01-12T08:30:00Z',
-      cancellation_reason: "Emergency - family illness",
-      refund_amount: 420.00, // Full refund due to emergency
-      refund_status: 'pending'
-    }
-  ];
+  const [, setLoading] = useState(false);
 
   const loadCancelledBookings = useCallback(async () => {
     try {
-      setTimeout(() => {
-        setBookings(mockCancelledBookings);
-        setTotalBookings(mockCancelledBookings.length);
-        setTotalLoss(mockCancelledBookings.reduce((sum, booking) => sum + booking.fare, 0));
-      }, 1000);
+      setLoading(true);
+      // Fetch cancelled bookings from API instead of using mock data
+      const cancelledBookings = await bookingService.getBookings({ booking_status: 'cancelled' });
+      setBookings(cancelledBookings.data);
+      setTotalBookings(cancelledBookings.data.length);
+      setTotalLoss(cancelledBookings.data.reduce((sum, booking) => sum + booking.price, 0));
     } catch (error) {
       console.error('Error loading cancelled bookings:', error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -103,23 +38,6 @@ export default function CancelledBookingsPage() {
       loadCancelledBookings();
     }
   }, [isAuthenticated, user, loadCancelledBookings]);
-
-  const handleProcessRefund = (bookingId: number) => {
-    setBookings(prev => prev.map(booking => 
-      booking.id === bookingId 
-        ? { ...booking, refund_status: 'processed' as const, payment_status: 'refunded' as const } 
-        : booking
-    ));
-  };
-
-  const getRefundStatusBadge = (status: string) => {
-    const styles = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      processed: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      denied: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    };
-    return styles[status as keyof typeof styles] || styles.pending;
-  };
 
   const formatDateTime = (dateTime: string) => {
     return new Date(dateTime).toLocaleString();
@@ -137,7 +55,8 @@ export default function CancelledBookingsPage() {
     return null;
   }
 
-  const totalRefunded = bookings.reduce((sum, booking) => sum + (booking.refund_amount || 0), 0);
+  // Calculate total refunded (this would need to come from actual refund data)
+  const totalRefunded = bookings.reduce((sum, booking) => sum + booking.price, 0);
   const refundRate = totalLoss > 0 ? (totalRefunded / totalLoss * 100) : 0;
 
   return (
@@ -168,7 +87,7 @@ export default function CancelledBookingsPage() {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <ComponentCard>
+        <ComponentCard title="Total Cancelled">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">❌</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Cancelled</p>
@@ -176,7 +95,7 @@ export default function CancelledBookingsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Revenue Loss">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💸</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Revenue Loss</p>
@@ -184,7 +103,7 @@ export default function CancelledBookingsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Total Refunded">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">💰</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Total Refunded</p>
@@ -192,7 +111,7 @@ export default function CancelledBookingsPage() {
           </div>
         </ComponentCard>
 
-        <ComponentCard>
+        <ComponentCard title="Refund Rate">
           <div className="p-4 text-center">
             <div className="text-3xl mb-2">📊</div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Refund Rate</p>
@@ -208,7 +127,8 @@ export default function CancelledBookingsPage() {
             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border-2 border-red-200 dark:border-red-800">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Customer Changes</h3>
               <p className="text-2xl font-bold text-red-600">
-                {bookings.filter(b => b.cancellation_reason.includes('changed')).length}
+                {/* We'll need to filter based on actual data when available */}
+                0
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Plan changes</p>
             </div>
@@ -216,7 +136,8 @@ export default function CancelledBookingsPage() {
             <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border-2 border-orange-200 dark:border-orange-800">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Emergency Cases</h3>
               <p className="text-2xl font-bold text-orange-600">
-                {bookings.filter(b => b.cancellation_reason.includes('Emergency')).length}
+                {/* We'll need to filter based on actual data when available */}
+                0
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Family emergencies</p>
             </div>
@@ -224,7 +145,8 @@ export default function CancelledBookingsPage() {
             <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Late Cancellations</h3>
               <p className="text-2xl font-bold text-yellow-600">
-                {bookings.filter(b => b.cancellation_reason.includes('Late')).length}
+                {/* We'll need to filter based on actual data when available */}
+                0
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Within 2 hours</p>
             </div>
@@ -235,7 +157,7 @@ export default function CancelledBookingsPage() {
       {/* Cancelled Bookings List */}
       <div className="grid grid-cols-1 gap-6">
         {bookings.length === 0 ? (
-          <ComponentCard>
+          <ComponentCard title="No Cancelled Bookings">
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">❌</div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Cancelled Bookings</h3>
@@ -244,49 +166,47 @@ export default function CancelledBookingsPage() {
           </ComponentCard>
         ) : (
           bookings.map((booking) => (
-            <ComponentCard key={booking.id}>
+            <ComponentCard key={booking.booking_id} title={`Booking #${booking.booking_id}`}>
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
                     <div className="text-4xl">🎫</div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Booking #{booking.id}
+                        Booking #{booking.booking_id}
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400">
-                        {booking.customer_name} • Seat {booking.seat_number}
+                        User ID: {booking.user_id}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <Badge className="bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
+                    <Badge color="error" variant="light">
                       ❌ CANCELLED
                     </Badge>
-                    <Badge className={getRefundStatusBadge(booking.refund_status)}>
-                      {booking.refund_status.toUpperCase()}
+                    <Badge color="warning" variant="light">
+                      PENDING REFUND
                     </Badge>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Trip Route</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.trip_route}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Route</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{booking.source} → {booking.destination}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Service Type</p>
+                    <p className="font-medium text-gray-900 dark:text-white capitalize">{booking.service_type}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Original Fare</p>
-                    <p className="font-medium text-red-600">${booking.fare.toFixed(2)}</p>
+                    <p className="font-medium text-red-600">${booking.price.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled Date</p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {new Date(booking.cancellation_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Refund Amount</p>
-                    <p className="font-medium text-green-600">
-                      {booking.refund_amount ? `$${booking.refund_amount.toFixed(2)}` : '$0.00'}
+                      {new Date(booking.updated_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -294,25 +214,25 @@ export default function CancelledBookingsPage() {
                 <div className="mb-4">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Cancellation Reason</p>
                   <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border-l-4 border-red-500">
-                    <p className="text-red-800 dark:text-red-200">{booking.cancellation_reason}</p>
+                    <p className="text-red-800 dark:text-red-200">Cancellation reason not specified</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Original Departure:</p>
-                    <p className="text-gray-900 dark:text-white">{formatDateTime(booking.departure_time)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Created On:</p>
+                    <p className="text-gray-900 dark:text-white">{formatDateTime(booking.created_at)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Booked On:</p>
-                    <p className="text-gray-900 dark:text-white">{formatDateTime(booking.booking_time)}</p>
+                    <p className="text-gray-600 dark:text-gray-400">Last Updated:</p>
+                    <p className="text-gray-900 dark:text-white">{formatDateTime(booking.updated_at)}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-4">
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Trip ID: {booking.trip_id}
+                      Truck ID: {booking.truck_id}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       User ID: {booking.user_id}
@@ -324,14 +244,11 @@ export default function CancelledBookingsPage() {
                     >
                       📄 View Details
                     </Button>
-                    {booking.refund_status === 'pending' && (
-                      <Button
-                        onClick={() => handleProcessRefund(booking.id)}
-                        className="px-4 py-2 text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-800/40 border border-green-200 dark:border-green-800 rounded-lg text-sm font-medium transition-all duration-200"
-                      >
-                        💰 Process Refund
-                      </Button>
-                    )}
+                    <Button
+                      className="px-4 py-2 text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-800/40 border border-green-200 dark:border-green-800 rounded-lg text-sm font-medium transition-all duration-200"
+                    >
+                      💰 Process Refund
+                    </Button>
                     <Button
                       className="px-4 py-2 text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-800/40 border border-purple-200 dark:border-purple-800 rounded-lg text-sm font-medium transition-all duration-200"
                     >

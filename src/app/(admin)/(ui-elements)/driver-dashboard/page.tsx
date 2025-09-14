@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { driverService } from "@/services/driverService";
-import { fleetService } from "@/services/fleetService";
 import ComponentCard from "@/components/common/ComponentCard";
 import Badge from "@/components/ui/badge/Badge";
 import Button from "@/components/ui/button/Button";
@@ -18,8 +16,6 @@ import {
 import { 
   BoxIcon,
   TaskIcon, 
-  UserIcon,
-  CalenderIcon,
   TimeIcon,
   LocationIcon
 } from "@/icons";

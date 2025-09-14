@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { userService, User, PaginatedResponse } from '@/services/userService';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -23,7 +23,6 @@ import {
   CalenderIcon,
   EyeIcon,
   PencilIcon,
-  TrashBinIcon
 } from '@/icons';
 import AddDriverModal from '@/components/drivers/AddDriverModal';
 
@@ -36,7 +35,7 @@ export default function DriversPage() {
   const [totalDrivers, setTotalDrivers] = useState(0);
   const [limit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState<string>('');
+  // const [, setFilterRole] = useState<string>(''); // Removed unused state
   
   // Toggle status functionality states
   const [toggleLoading, setToggleLoading] = useState<number | null>(null);
@@ -54,30 +53,7 @@ export default function DriversPage() {
   const [roleChangeError, setRoleChangeError] = useState<string | null>(null);
   const [roleChangeSuccess, setRoleChangeSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check if user is authenticated and admin
-    if (!userService.isAuthenticated()) {
-      router.push('/signin');
-      return;
-    }
-
-    if (!userService.isCurrentUserAdmin()) {
-      // Redirect non-admin users based on their role
-      const currentUser = userService.getCurrentUserFromStorage();
-      if (currentUser?.role === 'customer') {
-        router.push('/dashboard');
-      } else if (currentUser?.role === 'driver') {
-        router.push('/driver-dashboard');
-      } else {
-        router.push('/signin');
-      }
-      return;
-    }
-
-    loadDrivers();
-  }, [currentPage, limit, router]);
-
-  const loadDrivers = async () => {
+  const loadDrivers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -105,7 +81,30 @@ export default function DriversPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit]);
+
+  useEffect(() => {
+    // Check if user is authenticated and admin
+    if (!userService.isAuthenticated()) {
+      router.push('/signin');
+      return;
+    }
+
+    if (!userService.isCurrentUserAdmin()) {
+      // Redirect non-admin users based on their role
+      const currentUser = userService.getCurrentUserFromStorage();
+      if (currentUser?.role === 'customer') {
+        router.push('/dashboard');
+      } else if (currentUser?.role === 'driver') {
+        router.push('/driver-dashboard');
+      } else {
+        router.push('/signin');
+      }
+      return;
+    }
+
+    loadDrivers();
+  }, [currentPage, limit, router, loadDrivers]);
 
   const handleSearch = async () => {
     if (searchTerm.trim()) {
@@ -141,9 +140,9 @@ export default function DriversPage() {
       setToggleError(null);
       setToggleSuccess(null);
       
-      const result = await userService.toggleUserStatus(driver.id!, !driver.is_active);
+      await userService.toggleUserStatus(driver.id!, !driver.is_active);
       
-      setToggleSuccess(result.message || `Driver ${!driver.is_active ? 'activated' : 'deactivated'} successfully`);
+      setToggleSuccess(`Driver ${!driver.is_active ? 'activated' : 'deactivated'} successfully`);
       
       // Update the driver status in local state
       setDrivers(prev => prev.map(d => 
@@ -187,9 +186,9 @@ export default function DriversPage() {
       setRoleChangeLoading(true);
       setRoleChangeError(null);
       
-      const result = await userService.changeUserRole(driverToChangeRole.id!, newRole);
+      await userService.changeUserRole(driverToChangeRole.id!, newRole);
       
-      setRoleChangeSuccess(result.message || 'User role changed successfully');
+      setRoleChangeSuccess('User role changed successfully');
       
       // Update the driver role in local state
       setDrivers(prev => prev.map(d => 
@@ -249,18 +248,6 @@ export default function DriversPage() {
     });
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'driver':
-        return 'bg-blue-100 text-blue-800';
-      case 'admin':
-        return 'bg-red-100 text-red-800';
-      case 'staff':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   if (loading && drivers.length === 0) {
     return (

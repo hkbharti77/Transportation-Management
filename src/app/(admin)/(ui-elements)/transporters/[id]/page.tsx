@@ -133,8 +133,8 @@ export default function TransporterDetailsPage() {
             onRoleChange={handleRoleChange}
             isLoading={false}
             isAdmin={true}
-            isOwnProfile={false}
           />
+
         </div>
       </div>
     </div>

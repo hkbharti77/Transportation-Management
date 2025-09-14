@@ -221,7 +221,7 @@ export default function VehiclesPage() {
     }
   };
 
-  const handleVehicleUpdated = (vehicle: Vehicle) => {
+  const handleVehicleUpdated = () => {
     loadVehicles(); // Reload the list to get updated data
   };
 

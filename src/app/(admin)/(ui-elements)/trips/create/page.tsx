@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { tripService } from '@/services/tripService';
+
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
 import TripForm from '@/components/ui-elements/trip-management/TripForm';
@@ -12,24 +12,12 @@ import Button from '@/components/ui/button/Button';
 export default function CreateTripPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [creating, setCreating] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
-  const handleCreateTrip = async (tripData: any) => {
-    try {
-      setCreating(true);
-      setError(null);
-      
-      await tripService.createTrip(tripData);
-      
-      // Success - redirect to trips list
-      router.push('/trips');
-    } catch (error: any) {
-      console.error('Error creating trip:', error);
-      setError(error.response?.data?.message || 'Failed to create trip. Please try again.');
-    } finally {
-      setCreating(false);
-    }
+  const handleSuccess = () => {
+    // Success - redirect to trips list
+    router.push('/trips');
   };
 
   const handleCancel = () => {
@@ -108,10 +96,8 @@ export default function CreateTripPage() {
       <ComponentCard title="Trip Details">
         <div className="p-6">
           <TripForm
-            onSubmit={handleCreateTrip}
+            onSuccess={handleSuccess}
             onCancel={handleCancel}
-            loading={creating}
-            submitButtonText="Create Trip"
           />
         </div>
       </ComponentCard>

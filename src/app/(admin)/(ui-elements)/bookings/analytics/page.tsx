@@ -11,7 +11,7 @@ import { bookingService, BookingAnalytics } from '@/services/bookingService';
 
 
 export default function BookingAnalyticsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [analyticsData, setAnalyticsData] = useState<BookingAnalytics | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -311,7 +311,7 @@ export default function BookingAnalyticsPage() {
         <ComponentCard title="Bookings by Status">
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.by_status.map((item, index) => {
+              {analyticsData.by_status.map((item) => {
                 const percentage = analyticsData.summary.total_bookings > 0 
                   ? Math.round((item.count / analyticsData.summary.total_bookings) * 100)
                   : 0;
@@ -353,16 +353,11 @@ export default function BookingAnalyticsPage() {
         <ComponentCard title="Bookings by Service Type">
           <div className="p-6">
             <div className="space-y-4">
-              {analyticsData.by_service_type.map((item, index) => {
+              {analyticsData.by_service_type.map((item) => {
                 const percentage = analyticsData.summary.total_bookings > 0 
                   ? Math.round((item.count / analyticsData.summary.total_bookings) * 100)
                   : 0;
                 
-                const colors = {
-                  cargo: 'bg-blue-500',
-                  passenger: 'bg-green-500',
-                  public: 'bg-purple-500'
-                };
                 
                 const icons = {
                   cargo: '🚛',
@@ -370,7 +365,6 @@ export default function BookingAnalyticsPage() {
                   public: '🚌'
                 };
                 
-                const color = colors[item.service_type as keyof typeof colors] || 'bg-gray-500';
                 const icon = icons[item.service_type as keyof typeof icons] || '🚐';
                 
                 return (

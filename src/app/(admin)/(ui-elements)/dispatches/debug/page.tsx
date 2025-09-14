@@ -5,13 +5,35 @@ import { dispatchService } from '@/services/dispatchService';
 import ComponentCard from '@/components/common/ComponentCard';
 import Button from '@/components/ui/button/Button';
 
+// Define types for our debug info
+interface EnvironmentInfo {
+  apiUrl: string;
+  userAgent: string;
+  localStorage: {
+    hasAccessToken: boolean;
+    tokenLength: number;
+  };
+}
+
+interface TestResult {
+  name: string;
+  status: 'PASS' | 'FAIL' | 'ERROR';
+  details: Record<string, unknown>;
+}
+
+interface DebugInfo {
+  timestamp: string;
+  environment: EnvironmentInfo;
+  tests: TestResult[];
+}
+
 export default function DispatchDebugPage() {
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
   const runDiagnostics = async () => {
     setLoading(true);
-    const info: any = {
+    const info: DebugInfo = {
       timestamp: new Date().toISOString(),
       environment: {
         apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1',
@@ -129,7 +151,7 @@ export default function DispatchDebugPage() {
                   {/* Test Results */}
                   <div className="space-y-2">
                     <h3 className="font-semibold">Test Results</h3>
-                    {debugInfo.tests.map((test: any, index: number) => (
+                    {debugInfo.tests.map((test, index) => (
                       <div key={index} className={`p-3 rounded-lg ${
                         test.status === 'PASS' ? 'bg-green-50 dark:bg-green-900/20' :
                         test.status === 'FAIL' ? 'bg-yellow-50 dark:bg-yellow-900/20' :

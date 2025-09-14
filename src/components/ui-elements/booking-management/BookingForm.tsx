@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { bookingService, CreateBookingRequest } from '@/services/bookingService';
+import { User } from '@/services/userService';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select';
 import Button from '@/components/ui/button/Button';
@@ -38,7 +39,7 @@ export default function BookingForm({ onSuccess, onCancel }: BookingFormProps) {
   // UI states
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Load current user
   useEffect(() => {
@@ -187,7 +188,7 @@ export default function BookingForm({ onSuccess, onCancel }: BookingFormProps) {
               Booking for:
             </h3>
             <p className="text-blue-700 dark:text-blue-300">
-              {currentUser.name || currentUser.username} (ID: {currentUser.id})
+              {currentUser.name} (ID: {currentUser.id})
             </p>
           </div>
         )}

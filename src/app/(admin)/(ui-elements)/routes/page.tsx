@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -16,10 +16,10 @@ const RoutesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState<RouteFilterOptions>({
+  const filters: RouteFilterOptions = {
     page: 1,
     limit: 10,
-  });
+  };
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,7 +50,7 @@ const RoutesPage: React.FC = () => {
     }
   }, [searchParams]);
 
-  const fetchRoutes = async () => {
+  const fetchRoutes = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -70,17 +70,18 @@ const RoutesPage: React.FC = () => {
 
       setRoutes(routesData.data);
       setTotalPages(Math.ceil((routesData.total || 0) / (filters.limit || 10)));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch routes");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch routes";
+      setError(errorMessage);
       console.error("Error fetching routes:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filters, searchTerm, statusFilter, routeNumberFilter]);
 
   useEffect(() => {
     fetchRoutes();
-  }, [currentPage, filters, searchTerm, statusFilter, routeNumberFilter]);
+  }, [fetchRoutes]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,11 +130,6 @@ const RoutesPage: React.FC = () => {
     return `${mins}m`;
   };
 
-  const breadcrumbItems = [
-    { name: "Dashboard", path: "/" },
-    { name: "Routes", path: "/routes" },
-  ];
-
   if (loading && routes.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -144,7 +140,7 @@ const RoutesPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <PageBreadCrumb items={breadcrumbItems} />
+      <PageBreadCrumb pageTitle="Route Management" />
       
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -188,7 +184,7 @@ const RoutesPage: React.FC = () => {
         </div>
       )}
 
-      <ComponentCard>
+      <ComponentCard title="Routes">
         {/* Search and Filter Section */}
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">

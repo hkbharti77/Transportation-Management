@@ -147,7 +147,6 @@ export default function VehicleDirectoryPage() {
             onFiltersChange={handleFiltersChange}
             isLoading={isLoading}
             initialFilters={filters}
-            readOnlyMode={true}
           />
         </div>
 
@@ -171,7 +170,6 @@ export default function VehicleDirectoryPage() {
               vehicles={vehicles}
               onView={handleViewVehicle}
               isLoading={isLoading}
-              userRole={user?.role}
             />
 
             {/* Pagination */}

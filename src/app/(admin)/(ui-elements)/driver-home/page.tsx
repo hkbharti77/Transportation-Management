@@ -281,7 +281,7 @@ export default function DriverHomePage() {
             Welcome back, {user?.name || 'Driver'}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Here's your dashboard overview for today
+            Here&apos;s your dashboard overview for today
           </p>
         </div>
         <div className="flex items-center space-x-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { userService, User } from "@/services/userService";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -35,13 +35,7 @@ export default function EditPublicManagerPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (managerId) {
-      loadManager();
-    }
-  }, [managerId]);
-
-  const loadManager = async () => {
+  const loadManager = useCallback(async () => {
     try {
       setLoading(true);
       const managerData = await userService.getUserById(managerId);
@@ -58,7 +52,13 @@ export default function EditPublicManagerPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [managerId, router]);
+
+  useEffect(() => {
+    if (managerId) {
+      loadManager();
+    }
+  }, [managerId, loadManager]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -142,7 +142,7 @@ export default function EditPublicManagerPage() {
             Manager Not Found
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The manager you're looking for doesn't exist or has been removed.
+            The manager you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Button onClick={() => router.push('/public-managers')}>
             Back to Public Managers
@@ -171,7 +171,7 @@ export default function EditPublicManagerPage() {
           </div>
         </div>
 
-        <ComponentCard>
+        <ComponentCard title="Edit Manager Information">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
               Edit Manager Information

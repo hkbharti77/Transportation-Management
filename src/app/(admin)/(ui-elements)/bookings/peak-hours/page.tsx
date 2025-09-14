@@ -9,7 +9,7 @@ import Badge from '@/components/ui/badge/Badge';
 import { bookingService, BookingPeakHours } from '@/services/bookingService';
 
 export default function BookingPeakHoursPage() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [peakHoursData, setPeakHoursData] = useState<BookingPeakHours | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -273,7 +273,7 @@ export default function BookingPeakHoursPage() {
           </div>
           
           <div className="space-y-3">
-            {peakHoursData.hourly_distribution.map((item, index) => {
+            {peakHoursData.hourly_distribution.map((item) => {
               const maxBookings = Math.max(...peakHoursData.hourly_distribution.map(h => h.booking_count));
               const percentage = Math.round((item.booking_count / maxBookings) * 100);
               const hourInfo = getHourCategory(item.hour);
@@ -328,7 +328,7 @@ export default function BookingPeakHoursPage() {
           </div>
           
           <div className="space-y-3">
-            {peakHoursData.daily_distribution.map((item, index) => {
+            {peakHoursData.daily_distribution.map((item) => {
               const maxBookings = Math.max(...peakHoursData.daily_distribution.map(d => d.booking_count));
               const percentage = Math.round((item.booking_count / maxBookings) * 100);
               

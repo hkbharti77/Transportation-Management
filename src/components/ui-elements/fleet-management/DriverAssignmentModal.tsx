@@ -74,7 +74,7 @@ export default function DriverAssignmentModal({
       setIsLoading(true);
       setError(null);
       
-      const result = await fleetService.assignDriverToTruck(
+      await fleetService.assignDriverToTruck(
         parseInt(selectedDriverId),
         truck.id!
       );
@@ -112,7 +112,7 @@ export default function DriverAssignmentModal({
       setIsLoading(true);
       setError(null);
       
-      const result = await fleetService.unassignDriver(truck.assigned_driver_id!);
+      await fleetService.unassignDriver(truck.assigned_driver_id!);
       
       setSuccess('Driver unassigned successfully!');
       

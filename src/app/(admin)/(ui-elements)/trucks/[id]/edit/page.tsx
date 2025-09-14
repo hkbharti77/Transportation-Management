@@ -68,7 +68,7 @@ export default function EditTruckPage() {
             Truck Not Found
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            The truck you're looking for doesn't exist or has been removed.
+            The truck you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <button
             onClick={() => router.push('/trucks')}

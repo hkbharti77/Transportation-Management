@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadCrumb from '@/components/common/PageBreadCrumb';
@@ -13,7 +13,7 @@ export default function PopularRoutesPage() {
   const [routes, setRoutes] = useState<PopularRoute[]>([]);
   const [limit, setLimit] = useState(10);
 
-  const loadPopularRoutes = async () => {
+  const loadPopularRoutes = useCallback(async () => {
     try {
       setLoading(true);
       const data = await orderService.getPopularRoutes(limit);
@@ -24,13 +24,13 @@ export default function PopularRoutesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
       loadPopularRoutes();
     }
-  }, [isAuthenticated, user, limit]);
+  }, [isAuthenticated, user, limit, loadPopularRoutes]);
 
   const handleRefresh = () => {
     loadPopularRoutes();

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Badge from "../ui/badge/Badge";
-import { ArrowUpIcon, BoxIcon, UserIcon, TimeIcon } from "@/icons";
+import { BoxIcon, UserIcon, TimeIcon } from "@/icons";
 import { fleetService, type FleetSummary as FleetSummaryType } from "@/services/fleetService";
 
 export const FleetSummary = () => {

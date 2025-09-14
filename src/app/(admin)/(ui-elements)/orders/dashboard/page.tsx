@@ -43,17 +43,6 @@ export default function OrderDashboardPage() {
     }
   }, [isAuthenticated, user]);
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400',
-      confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
-      assigned: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400',
-      in_progress: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
-      completed: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
-    };
-    return statusStyles[status as keyof typeof statusStyles] || statusStyles.pending;
-  };
 
   const getOrderTypeIcon = (cargoType: string) => {
     const icons = {
@@ -67,15 +56,6 @@ export default function OrderDashboardPage() {
     return icons[cargoType as keyof typeof icons] || '📦';
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   if (isLoading) {
     return (

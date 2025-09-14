@@ -5,7 +5,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 
 const PartsInventoryManagement: React.FC = () => {
   return (
-    <ComponentCard>
+    <ComponentCard title="Parts Inventory Management">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-title-md2 font-bold text-black dark:text-white">
           Parts Inventory

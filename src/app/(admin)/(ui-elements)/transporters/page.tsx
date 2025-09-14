@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Table, 
   TableBody, 
@@ -35,7 +35,7 @@ export default function TransportersPage() {
   });
   const [apiError, setApiError] = useState(false);
   const [apiSuccess, setApiSuccess] = useState(false);
-  const [pagination, setPagination] = useState({
+  const [pagination] = useState({
     skip: 0,
     limit: 100,
     total: 0
@@ -62,34 +62,33 @@ export default function TransportersPage() {
     }
   }, [router]);
 
-  useEffect(() => {
-    // Fetch transporters from API
-    const fetchTransporters = async () => {
-      setIsLoading(true);
-      try {
-        const skip = (currentPage - 1) * pagination.limit;
-        const response = await userService.getTransporters(skip, pagination.limit);
-        
-        setTransporters(response);
-        setFilteredTransporters(response);
-        setTotalPages(Math.ceil(response.length / pagination.limit));
-        setApiError(false);
-        setApiSuccess(true);
-      } catch (error) {
-        console.error("Failed to fetch transporters:", error);
-        // Fallback to empty array if API fails
-        setTransporters([]);
-        setFilteredTransporters([]);
-        setTotalPages(1);
-        setApiError(true);
-        console.log("API not available, using empty data. Please ensure your backend is running on http://localhost:8000");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTransporters();
+  const fetchTransporters = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const skip = (currentPage - 1) * pagination.limit;
+      const response = await userService.getTransporters(skip, pagination.limit);
+      
+      setTransporters(response);
+      setFilteredTransporters(response);
+      setTotalPages(Math.ceil(response.length / pagination.limit));
+      setApiError(false);
+      setApiSuccess(true);
+    } catch (error) {
+      console.error("Failed to fetch transporters:", error);
+      // Fallback to empty array if API fails
+      setTransporters([]);
+      setFilteredTransporters([]);
+      setTotalPages(1);
+      setApiError(true);
+      console.log("API not available, using empty data. Please ensure your backend is running on http://localhost:8000");
+    } finally {
+      setIsLoading(false);
+    }
   }, [currentPage, pagination.limit]);
+
+  useEffect(() => {
+    fetchTransporters();
+  }, [fetchTransporters]); // Fixed: Added fetchTransporters to dependency array
 
   // Filter transporters based on search and filters
   useEffect(() => {
@@ -118,7 +117,7 @@ export default function TransportersPage() {
     setFilteredTransporters(filtered);
     setTotalPages(Math.ceil(filtered.length / pagination.limit));
     setCurrentPage(1); // Reset to first page when filters change
-  }, [transporters, searchQuery, filters]);
+  }, [transporters, searchQuery, filters, pagination.limit]); // Fixed: Added pagination.limit to dependency array
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -154,46 +153,6 @@ export default function TransportersPage() {
     } catch (error) {
       console.error("Failed to delete transporter:", error);
       alert("Failed to delete transporter. Please try again.");
-    }
-  };
-
-  const handleToggleStatus = async (transporterId: number, isActive: boolean) => {
-    try {
-      await userService.toggleUserStatus(transporterId, isActive);
-      setTransporters(prev => prev.map(transporter => 
-        transporter.id === transporterId ? { ...transporter, is_active: isActive } : transporter
-      ));
-      setFilteredTransporters(prev => prev.map(transporter => 
-        transporter.id === transporterId ? { ...transporter, is_active: isActive } : transporter
-      ));
-    } catch (error) {
-      console.error("Failed to toggle transporter status:", error);
-      alert("Failed to update transporter status. Please try again.");
-    }
-  };
-
-  const handleResetPassword = async (transporterId: number) => {
-    try {
-      await userService.resetUserPassword(transporterId);
-      alert("Password reset email sent to transporter successfully!");
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      alert("Failed to reset password. Please try again.");
-    }
-  };
-
-  const handleRoleChange = async (transporterId: number, role: string) => {
-    try {
-      await userService.changeUserRole(transporterId, role);
-      setTransporters(prev => prev.map(transporter => 
-        transporter.id === transporterId ? { ...transporter, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : transporter
-      ));
-      setFilteredTransporters(prev => prev.map(transporter => 
-        transporter.id === transporterId ? { ...transporter, role: role as "admin" | "staff" | "customer" | "public_service_manager" } : transporter
-      ));
-    } catch (error) {
-      console.error("Failed to change transporter role:", error);
-      alert("Failed to update transporter role. Please try again.");
     }
   };
 

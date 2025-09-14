@@ -90,7 +90,7 @@ class DriverService {
         // Clear invalid token and redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('current_user');
-        window.location.href = '/auth/signin';
+        window.location.href = '/signin';
         throw new Error('Authentication failed. Please log in again.');
       }
       
@@ -243,7 +243,7 @@ class DriverService {
 
   // Get available drivers (not assigned to any truck)
   async getAvailableDrivers(): Promise<Driver[]> {
-    const response = await fetch(`${API_BASE_URL}/fleet/drivers?is_available=true&assigned_truck_id=null`, {
+    const response = await fetch(`${API_BASE_URL}/fleet/drivers?is_available=true&limit=100`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });

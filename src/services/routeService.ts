@@ -44,11 +44,7 @@ export interface RouteFilterOptions {
   limit?: number;
 }
 
-export interface ApiResponse<T> {
-  data?: T;
-  message?: string;
-  success?: boolean;
-}
+// Removed unused ApiResponse interface
 
 export interface DeleteRouteResponse {
   message: string;
@@ -123,12 +119,12 @@ class RouteService {
       try {
         const errorData = await response.json();
         errorDetails = errorData.detail || errorData.message || JSON.stringify(errorData);
-      } catch (parseError) {
+      } catch {
         // If we can't parse JSON, try to get text
         try {
           const errorText = await response.text();
           errorDetails = errorText || `HTTP error! status: ${response.status}`;
-        } catch (textError) {
+        } catch {
           errorDetails = `HTTP error! status: ${response.status}`;
         }
       }
@@ -247,7 +243,7 @@ class RouteService {
   }
 
   // Delete route (Admin only)
-  async deleteRoute(routeId: number): Promise<ApiResponse<null>> {
+  async deleteRoute(routeId: number): Promise<null> {
     if (!this.isCurrentUserAdmin()) {
       throw new Error('Only administrators can delete routes');
     }
@@ -257,7 +253,7 @@ class RouteService {
       headers: this.getAuthHeaders(),
     });
 
-    return this.handleResponse<ApiResponse<null>>(response);
+    return this.handleResponse<null>(response);
   }
 
   // Toggle route active status (Admin only)

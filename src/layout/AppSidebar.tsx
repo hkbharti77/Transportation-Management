@@ -14,6 +14,7 @@ import {
   BoxIcon,
   TaskIcon,
   ArrowRightIcon,
+  DollarLineIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -96,10 +97,35 @@ const adminSidebar: NavItem[] = [
       { name: "Booking Analytics", path: "/bookings/analytics", pro: false },
       { name: "Revenue Analytics", path: "/bookings/revenue", pro: false, new: true },
       { name: "Peak Hours Analytics", path: "/bookings/peak-hours", pro: false, new: true },
-      { name: "Payment Management", path: "/bookings/payments", pro: false },
       { name: "Public Services", path: "/public-services", pro: false },
       { name: "Tickets", path: "/tickets", pro: false },
       { name: "API Endpoints Test", path: "/bookings/endpoints", pro: false, new: true },
+    ],
+  },
+  {
+    icon: <DollarLineIcon />,
+    name: "Payment Management",
+    subItems: [
+      { name: "Payment Dashboard", path: "/payments/dashboard", pro: false },
+      { name: "Payment Management", path: "/bookings/payments", pro: false },
+      { name: "Invoice Management", path: "/bookings/invoices", pro: false },
+      { name: "Generate Invoice", path: "/bookings/generate-invoice", pro: false },
+      { name: "Generate Invoice PDF", path: "/bookings/generate-invoice-pdf", pro: false },
+      { name: "Process Payment", path: "/bookings/process-payment", pro: false },
+      { name: "Payment Statistics", path: "/bookings/statistics", pro: false },
+      { name: "Payment Methods", path: "/bookings/payment-methods", pro: false },
+      { name: "Payment Statuses", path: "/bookings/payment-statuses", pro: false },
+      { name: "Invoice Statuses", path: "/bookings/invoice-statuses", pro: false },
+      { name: "Search Payments/Invoices", path: "/bookings/search", pro: false },
+      { name: "Refund Processing", path: "/bookings/refunds", pro: false },
+      { name: "Create Payment", path: "/bookings/create-payment", pro: false },
+      { name: "Bulk Operations", path: "/bookings/bulk", pro: false },
+      { name: "Export Payments/Invoices", path: "/bookings/export", pro: false },
+      { name: "Payment API Test", path: "/bookings/payment-endpoint", pro: false },
+      { name: "Payment Detail API Test", path: "/bookings/payment-detail-endpoint", pro: false },
+      { name: "User Payments API Test", path: "/bookings/user-payments-endpoint", pro: false },
+      { name: "Booking Payments API Test", path: "/bookings/booking-payments-endpoint", pro: false },
+      { name: "Webhook Test", path: "/bookings/webhook-test", pro: false },
     ],
   },
   {
@@ -144,7 +170,25 @@ const adminSidebar: NavItem[] = [
       { name: "Route Analytics", path: "/routes/analytics", pro: false },
     ],
   },
-];
+  {
+    icon: <PlugInIcon />,
+    name: "Public Services",
+    subItems: [
+      { name: "All Services", path: "/public-services", pro: false },
+      { name: "Create Service", path: "/public-services/create", pro: false },
+      { name: "Active Services", path: "/public-services?status=active", pro: false },
+      { name: "Service Analytics", path: "/public-services/analytics", pro: false },
+      { name: "Service Statistics", path: "/public-services/statistics", pro: false },
+      { name: "Bulk Status Update", path: "/public-services/bulk-status", pro: false },
+      { name: "Seat Availability", path: "/public-services/availability", pro: false },
+      { name: "My Tickets", path: "/public-services/tickets", pro: false },
+      { name: "All Tickets (Admin)", path: "/public-services/admin/tickets", pro: false },
+      { name: "Search Tickets", path: "/public-services/tickets/search", pro: false },
+      { name: "User Tickets", path: "/public-services/tickets/user", pro: false },
+      { name: "Search Routes", path: "/public-services/search", pro: false }
+    ]
+  }
+]
 
 // ======================= Customer Sidebar =======================
 const customerSidebar: NavItem[] = [

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { routeService, Route, Trip, RouteDetailStats } from "@/services/routeService";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -10,7 +10,6 @@ import Link from "next/link";
 
 const RouteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { user } = useAuth();
   const [route, setRoute] = useState<Route | null>(null);
   const [trips, setTrips] = useState<Trip[]>([]);

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { userService, User } from "@/services/userService";
+import { userService } from "@/services/userService";
 import ComponentCard from "@/components/common/ComponentCard";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
@@ -123,7 +123,7 @@ export default function CreatePublicManagerPage() {
           </h2>
         </div>
 
-        <ComponentCard>
+        <ComponentCard title="Public Service Manager Information">
           <div className="mb-6">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
               Public Service Manager Information

@@ -5,7 +5,7 @@ import { bookingService, Booking } from '@/services/bookingService';
 import ComponentCard from '@/components/common/ComponentCard';
 import Button from '@/components/ui/button/Button';
 import Input from '@/components/form/input/InputField';
-import BookingTable from './BookingTable';
+// import BookingTable from './BookingTable'; // Unused import
 
 interface UserBookingsProps {
   defaultUserId?: number;
@@ -80,7 +80,7 @@ export default function UserBookings({ defaultUserId, showUserInput = true }: Us
                 <Input
                   type="number"
                   placeholder="Enter user ID (e.g., 3)"
-                  value={userIdInput}
+                  defaultValue={userIdInput}
                   onChange={(e) => setUserIdInput(e.target.value)}
                   min="1"
                 />
@@ -117,7 +117,7 @@ export default function UserBookings({ defaultUserId, showUserInput = true }: Us
                 </label>
                 <Input
                   type="number"
-                  value={skip.toString()}
+                  defaultValue={skip.toString()}
                   onChange={(e) => setSkip(Math.max(0, parseInt(e.target.value) || 0))}
                   min="0"
                   className="w-24"
@@ -129,7 +129,7 @@ export default function UserBookings({ defaultUserId, showUserInput = true }: Us
                 </label>
                 <Input
                   type="number"
-                  value={limit.toString()}
+                  defaultValue={limit.toString()}
                   onChange={(e) => setLimit(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
                   min="1"
                   max="100"

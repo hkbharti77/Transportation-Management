@@ -19,7 +19,7 @@ export default function MaintenancePage() {
           </Button>
         </div>
 
-        <ComponentCard>
+        <ComponentCard title="Fleet Maintenance Management">
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-2">
               Fleet Maintenance Management

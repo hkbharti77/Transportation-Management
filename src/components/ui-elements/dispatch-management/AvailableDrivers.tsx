@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { dispatchService, AvailableDriver } from '@/services/dispatchService';
-import ComponentCard from '@/components/common/ComponentCard';
+// import ComponentCard from '@/components/common/ComponentCard'; // Unused import
 import Button from '@/components/ui/button/Button';
 import Badge from '@/components/ui/badge/Badge';
 
@@ -99,7 +99,7 @@ export default function AvailableDrivers({
         </div>
         <div className="mt-3">
           <Button
-            onClick={loadAvailableDrivers}
+            onClick={onRefresh || loadAvailableDrivers}
             className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm"
           >
             Try Again
@@ -118,7 +118,7 @@ export default function AvailableDrivers({
           All drivers are currently assigned or unavailable. Check back later.
         </p>
         <Button
-          onClick={loadAvailableDrivers}
+          onClick={onRefresh || loadAvailableDrivers}
           className="mt-4 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
         >
           Refresh List

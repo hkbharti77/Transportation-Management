@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Vehicle, CreateVehicleRequest, UpdateVehicleRequest } from "@/services/vehicleService";
-import { driverService } from "@/services/driverService";
+import { driverService, Driver } from "@/services/driverService";
 import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select";
@@ -23,7 +23,7 @@ export default function VehicleForm({
   isLoading = false,
   mode
 }: VehicleFormProps) {
-  const [drivers, setDrivers] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   
   const [formData, setFormData] = useState<CreateVehicleRequest>({
@@ -70,7 +70,7 @@ export default function VehicleForm({
     }
   }, [vehicle, mode]);
 
-  const handleInputChange = (field: keyof CreateVehicleRequest, value: any) => {
+  const handleInputChange = (field: keyof CreateVehicleRequest, value: string | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -256,7 +256,7 @@ export default function VehicleForm({
             <Select
               options={driverOptions}
               value={formData.assigned_driver_id?.toString() || ""}
-              onChange={(value) => handleInputChange("assigned_driver_id", value ? parseInt(value) : null)}
+              onChange={(value) => handleInputChange("assigned_driver_id", value === "" ? null : parseInt(value))}
               placeholder="Select a driver (optional)"
             />
           )}

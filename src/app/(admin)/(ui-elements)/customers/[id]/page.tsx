@@ -133,7 +133,6 @@ export default function CustomerDetailsPage() {
             onRoleChange={handleRoleChange}
             isLoading={false}
             isAdmin={true}
-            isOwnProfile={false}
           />
         </div>
       </div>
