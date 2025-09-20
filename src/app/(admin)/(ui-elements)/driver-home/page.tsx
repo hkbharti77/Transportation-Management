@@ -15,6 +15,7 @@ import {
   TruckIcon,
   AlertIcon
 } from "@/icons";
+import { getDefaultDashboardRoute, UserRole } from "@/utils/roleBasedRouting";
 
 // Mock data interfaces for driver home dashboard
 interface QuickAction {
@@ -65,14 +66,9 @@ export default function DriverHomePage() {
 
     // Only allow drivers to access this dashboard
     if (user?.role !== 'driver') {
-      // Redirect non-drivers to appropriate dashboard
-      if (user?.role === 'admin') {
-        router.push('/');
-      } else if (user?.role === 'customer') {
-        router.push('/dashboard');
-      } else {
-        router.push('/signin');
-      }
+      // Redirect non-drivers to appropriate dashboard using our role-based routing utility
+      const defaultRoute = getDefaultDashboardRoute(user?.role as UserRole);
+      router.push(defaultRoute);
       return;
     }
 

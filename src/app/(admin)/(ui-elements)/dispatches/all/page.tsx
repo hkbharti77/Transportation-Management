@@ -25,8 +25,8 @@ export default function AllDispatchesPage() {
       return;
     }
 
-    // Check if user is admin or staff
-    if (user?.role && !['admin', 'staff'].includes(user.role)) {
+    // Check if user is admin, staff, or dispatcher
+    if (user?.role && !['admin', 'staff', 'dispatcher'].includes(user.role)) {
       router.push('/');
       return;
     }
@@ -41,8 +41,8 @@ export default function AllDispatchesPage() {
     );
   }
 
-  // Redirect if not authenticated or not admin/staff
-  if (!isAuthenticated || (user?.role && !['admin', 'staff'].includes(user.role))) {
+  // Redirect if not authenticated or not admin/staff/dispatcher
+  if (!isAuthenticated || (user?.role && !['admin', 'staff', 'dispatcher'].includes(user.role))) {
     return null;
   }
 
@@ -72,7 +72,10 @@ export default function AllDispatchesPage() {
             🚚 All Dispatches
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage and monitor all dispatch operations
+            {user?.role === 'dispatcher' 
+              ? 'Manage and coordinate dispatch operations' 
+              : 'Manage and monitor all dispatch operations'
+            }
           </p>
         </div>
         <div className="flex items-center gap-3">

@@ -61,8 +61,33 @@ export default function SignInForm() {
         console.log('Current user profile:', currentUser);
         // You can store additional user info in localStorage or context if needed
         localStorage.setItem('current_user', JSON.stringify(currentUser));
+        
+        // Redirect based on user role
+        setTimeout(() => {
+          switch (currentUser.role.toLowerCase()) {
+            case 'admin':
+              window.location.href = '/admin/overview';
+              break;
+            case 'driver':
+              window.location.href = '/driver-home';
+              break;
+            case 'customer':
+            case 'public_service_manager':
+              window.location.href = '/dashboard';
+              break;
+            case 'dispatcher':
+              window.location.href = '/dispatches/all';
+              break;
+            default:
+              window.location.href = '/';
+          }
+        }, 1500);
       } catch (profileError) {
         console.warn('Could not fetch user profile:', profileError);
+        // Fallback redirect
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
       }
       
       // Reset form
@@ -70,11 +95,6 @@ export default function SignInForm() {
         username: "",
         password: ""
       });
-      
-      // Redirect to dashboard after successful login
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
     } finally {

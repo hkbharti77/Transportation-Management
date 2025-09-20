@@ -76,9 +76,22 @@ TailAdmin is a pre-designed starting point for building a web-based dashboard us
 - Alerts, Dropdowns, Modals, Buttons and more
 - Service Management System for fleet maintenance
 - Parts Inventory Management
+- Notification Management System
+- Role-Based Access Control for different user types
 - Can't forget Dark Mode 🕶️
 
 All components are built with React and styled using Tailwind CSS for easy customization.
+
+## Role-Based Access Control
+
+This template implements a comprehensive role-based access control system with distinct views for different user types:
+
+- **Admin**: Full system access with comprehensive dashboard and analytics
+- **Driver**: Access to trip information, vehicle details, and navigation tools
+- **Customer**: Passenger services including trip booking and real-time tracking
+- **Dispatcher**: Operations coordination with order and resource management
+
+For implementation details, see [ROLE_BASED_ROUTING.md](ROLE_BASED_ROUTING.md)
 
 ## Feature Comparison
 
@@ -99,11 +112,13 @@ To learn more about pro version features and pricing, visit our [pricing page](h
 
 ## Changelog
 
-### Version 2.0.3 - [September 7, 2025]
+### Version 2.0.3 - [September 14, 2025]
 
+- Added Notification Management System
 - Added Service Management System for fleet maintenance
 - Added Parts Inventory Management functionality
 - Enhanced Fleet Management capabilities
+- Implemented Role-Based Access Control system
 
 ### Version 2.0.2 - [March 25, 2025]
 
