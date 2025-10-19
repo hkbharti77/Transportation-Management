@@ -1,0 +1,45 @@
+"use client";
+
+import React from "react";
+import ComponentCard from "@/components/common/ComponentCard";
+import Button from "@/components/ui/button/Button";
+import { PlusIcon } from "@/icons";
+
+export default function MaintenancePage() {
+  return (
+    <div>
+      <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-title-md2 font-bold text-black dark:text-white">
+            Fleet Maintenance
+          </h2>
+          <Button className="flex items-center gap-2">
+            <PlusIcon className="h-4 w-4" />
+            Schedule Maintenance
+          </Button>
+        </div>
+
+        <ComponentCard title="Fleet Maintenance Management">
+          <div className="text-center py-12">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-2">
+              Fleet Maintenance Management
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              This section will be implemented to manage fleet maintenance schedules and records.
+            </p>
+            <div className="text-sm text-gray-400">
+              Features coming soon:
+            </div>
+            <ul className="text-sm text-gray-400 mt-2 space-y-1">
+              <li>• Preventive maintenance scheduling</li>
+              <li>• Maintenance history tracking</li>
+              <li>• Service provider management</li>
+              <li>• Cost tracking and reporting</li>
+              <li>• Maintenance alerts and notifications</li>
+            </ul>
+          </div>
+        </ComponentCard>
+      </div>
+    </div>
+  );
+}
